@@ -6,7 +6,7 @@ import { Check, ArrowUpRight, Github, Maximize2, X, ChevronLeft, ChevronRight, I
 
 const GOLD = "#c9a66b";
 
-const ExpandableImage = ({ src, alt, className, testId, onExpand }) => (
+const ExpandableImage = ({ src, alt, className, testId, onExpand, isFlagship }) => (
   <button
     type="button"
     onClick={onExpand}
@@ -15,7 +15,13 @@ const ExpandableImage = ({ src, alt, className, testId, onExpand }) => (
     className="focus-ring relative block w-full overflow-hidden group/img"
   >
     <img src={src} alt={alt} loading="lazy" className={className} />
-    <span className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover/img:bg-black/30 transition-colors duration-300">
+    <span
+      className={
+        isFlagship
+          ? "absolute inset-0 flex items-center justify-center bg-[#c9a66b]/0 group-hover/img:bg-[#c9a66b]/10 transition-colors duration-300"
+          : "absolute inset-0 flex items-center justify-center bg-black/0 group-hover/img:bg-black/30 transition-colors duration-300"
+      }
+    >
       <Maximize2
         size={20}
         className="text-white opacity-0 group-hover/img:opacity-100 transition-opacity duration-300"
@@ -101,7 +107,7 @@ const Lightbox = ({ lightbox, onClose, onNavigate }) => {
 };
 
 const ProjectLinks = ({ p, images, onExpand, isFlagship }) => {
-  const iconClass = isFlagship ? "text-[#c9a66b]" : "text-[#5e6ad2]";
+  const iconClass = "text-[#5e6ad2]";
   return (
     <div className="mt-12 flex flex-wrap items-center gap-6">
       {p.live && (
@@ -156,11 +162,8 @@ const CaseStudy = ({ p, onExpand }) => {
   const isFlagship = p.accent === "gold";
   const accentColor = isFlagship ? GOLD : "#5e6ad2";
   const accentTextClass = isFlagship ? "text-[#c9a66b]" : "text-[#5e6ad2]";
-  const accentBorderClass = isFlagship ? "border-[#c9a66b]/40" : "border-[#5e6ad2]/40";
-  const sectionBorderClass = isFlagship ? "border-[#c9a66b]/25" : "border-white/5";
-  const chipClass = isFlagship
-    ? "font-mono2 text-xs text-[#c9a66b] border border-[#c9a66b]/30 px-3 py-1.5"
-    : "font-mono2 text-xs text-zinc-300 border border-zinc-800 px-3 py-1.5";
+  const sectionBorderClass = isFlagship ? "border-[#c9a66b]/12" : "border-white/5";
+  const chipClass = "font-mono2 text-xs text-zinc-300 border border-zinc-800 px-3 py-1.5";
 
   return (
   <Reveal>
@@ -180,6 +183,7 @@ const CaseStudy = ({ p, onExpand }) => {
               className="w-full h-56 sm:h-72 object-cover group-hover/img:scale-[1.03] transition-transform duration-700"
               testId={`project-${p.id}-image`}
               onExpand={() => onExpand(images, 0)}
+              isFlagship={isFlagship}
             />
           </div>
           {p.gallery?.length > 0 && (
@@ -192,6 +196,7 @@ const CaseStudy = ({ p, onExpand }) => {
                     className="w-full h-20 sm:h-28 object-cover group-hover/img:scale-[1.03] transition-transform duration-700"
                     testId={`project-${p.id}-gallery-${i + 1}`}
                     onExpand={() => onExpand(images, i + 1)}
+                    isFlagship={isFlagship}
                   />
                 </div>
               ))}
@@ -212,9 +217,9 @@ const CaseStudy = ({ p, onExpand }) => {
       </div>
 
       {p.diagram && (
-        <div className={`mt-14 border ${isFlagship ? "border-[#c9a66b]/20" : "border-white/5"} bg-[#0f1011] p-6 sm:p-10`}>
+        <div className="mt-14 border border-white/5 bg-[#0f1011] p-6 sm:p-10">
           <h4 className="font-mono2 text-xs uppercase tracking-[0.25em] text-zinc-500 mb-6">Architecture</h4>
-          <Diagram type={p.diagram} color={accentColor} />
+          <Diagram type={p.diagram} accentColor={accentColor} />
         </div>
       )}
 
@@ -273,7 +278,7 @@ const CaseStudy = ({ p, onExpand }) => {
 
       <ProjectLinks p={p} images={images} onExpand={onExpand} isFlagship={isFlagship} />
 
-      <div className={`mt-12 border-l-2 ${accentBorderClass} pl-6`}>
+      <div className="mt-12 border-l-2 border-[#5e6ad2]/40 pl-6">
         <h4 className="font-mono2 text-xs uppercase tracking-[0.25em] text-zinc-500 mb-3">Lesson Learned</h4>
         <p className="text-white text-base sm:text-lg leading-relaxed max-w-3xl">{p.lesson}</p>
         {p.positioning && (

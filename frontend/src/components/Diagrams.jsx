@@ -54,17 +54,17 @@ export const PAIDiagram = () => {
   );
 };
 
-export const TajKhonaDiagram = ({ color = "#5e6ad2" }) => {
+export const TajKhonaDiagram = ({ accentColor = "#5e6ad2" }) => {
   const reduce = useReducedMotion();
   return (
     <svg viewBox="0 0 800 340" className="w-full h-auto" role="img" aria-label="TajKhona architecture: Next.js client connected to Supabase services">
-      <Edge x1={400} y1={70} x2={400} y2={150} color={color} delay={0.3} reduce={reduce} />
-      <Edge x1={400} y1={210} x2={150} y2={290} color={color} delay={0.6} reduce={reduce} />
-      <Edge x1={400} y1={210} x2={330} y2={290} color={color} delay={0.75} reduce={reduce} />
-      <Edge x1={400} y1={210} x2={510} y2={290} color={color} delay={0.9} reduce={reduce} />
-      <Edge x1={400} y1={210} x2={670} y2={290} color={color} delay={1.05} reduce={reduce} />
+      <Edge x1={400} y1={70} x2={400} y2={150} delay={0.3} reduce={reduce} />
+      <Edge x1={400} y1={210} x2={150} y2={290} delay={0.6} reduce={reduce} />
+      <Edge x1={400} y1={210} x2={330} y2={290} delay={0.75} reduce={reduce} />
+      <Edge x1={400} y1={210} x2={510} y2={290} delay={0.9} reduce={reduce} />
+      <Edge x1={400} y1={210} x2={670} y2={290} delay={1.05} reduce={reduce} />
       <Box x={400} y={50} w={170} h={46} label="Next.js Client" delay={0.1} reduce={reduce} />
-      <Box x={400} y={180} w={190} h={56} label="Supabase Platform" accent color={color} delay={0.4} reduce={reduce} />
+      <Box x={400} y={180} w={190} h={56} label="Supabase Platform" accent color={accentColor} delay={0.4} reduce={reduce} />
       <Box x={150} y={300} w={130} h={42} label="Auth + Postgres" delay={0.7} reduce={reduce} />
       <Box x={330} y={300} w={110} h={42} label="Maps" delay={0.85} reduce={reduce} />
       <Box x={510} y={300} w={110} h={42} label="AI Layer" delay={1.0} reduce={reduce} />
@@ -92,8 +92,8 @@ export const PipelineDiagram = () => {
   );
 };
 
-export const Diagram = ({ type, color }) => {
+export const Diagram = ({ type, accentColor }) => {
   if (type === "pai") return <PAIDiagram />;
-  if (type === "tajkhona") return <TajKhonaDiagram color={color} />;
+  if (type === "tajkhona") return <TajKhonaDiagram accentColor={accentColor} />;
   return null;
 };
