@@ -1,14 +1,59 @@
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
 import { ArrowDown, FileDown } from "lucide-react";
 import { HERO_INFO, ACTIVE_SYSTEMS, STATUS_LINE, CONTACT } from "@/lib/data";
 
 const LINES = ["Daler Rahimov"];
 
+// Each real section on the page "activates" a stage; connections assigned to
+// that stage draw in once the section first enters the viewport. Monotonic —
+// once a stage is reached it never resets, even if the visitor scrolls back up.
+const SECTION_STAGES = [
+  { id: "about", stage: 1 },
+  { id: "experience", stage: 2 },
+  { id: "projects", stage: 3 },
+  { id: "tools", stage: 4 },
+  { id: "writing", stage: 5 },
+  { id: "contact", stage: 5 },
+];
+const MAX_STAGE = 5;
+
+// edges = [[0,1],[0,2],[1,3],[1,4],[2,4],[2,5],[4,3],[4,5]]
+// stage 0 = visible on load (~ the identity node's direct connections, 3/8 ≈ 37%)
+const EDGE_STAGE = [1, 3, 4, 0, 0, 5, 0, 2];
+
+const useGraphStage = () => {
+  const reduce = useReducedMotion();
+  const [stage, setStage] = useState(reduce ? MAX_STAGE : 0);
+
+  useEffect(() => {
+    if (reduce) return;
+    const observers = SECTION_STAGES.map(({ id, stage: target }) => {
+      const el = document.getElementById(id);
+      if (!el) return null;
+      const observer = new IntersectionObserver(
+        ([entry]) => {
+          if (entry.isIntersecting) {
+            setStage((cur) => Math.max(cur, target));
+            observer.disconnect();
+          }
+        },
+        { threshold: 0, rootMargin: "0px 0px -10% 0px" }
+      );
+      observer.observe(el);
+      return observer;
+    });
+    return () => observers.forEach((o) => o?.disconnect());
+  }, [reduce]);
+
+  return { stage, reduce };
+};
+
 const NetworkGraphic = () => {
   const ref = useRef(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
   const y = useTransform(scrollYProgress, [0, 1], [0, 120]);
+  const { stage, reduce } = useGraphStage();
   const nodes = [
     { cx: 200, cy: 60 }, { cx: 90, cy: 150 }, { cx: 310, cy: 150 },
     { cx: 40, cy: 280 }, { cx: 200, cy: 250 }, { cx: 360, cy: 280 },
@@ -17,25 +62,32 @@ const NetworkGraphic = () => {
   return (
     <div ref={ref} className="absolute right-0 top-1/2 -translate-y-1/2 w-[420px] h-[420px] opacity-40 hidden lg:block pointer-events-none" aria-hidden="true">
       <motion.svg style={{ y }} viewBox="0 0 400 340" className="w-full h-full">
-        {edges.map(([a, b], i) => (
-          <motion.line
-            key={i}
-            x1={nodes[a].cx} y1={nodes[a].cy} x2={nodes[b].cx} y2={nodes[b].cy}
-            stroke="#5e6ad2" strokeWidth="1" strokeOpacity="0.5"
-            initial={{ pathLength: 0 }}
-            animate={{ pathLength: 1 }}
-            transition={{ duration: 1.4, delay: 1 + i * 0.12, ease: "easeOut" }}
-          />
-        ))}
+        {edges.map(([a, b], i) => {
+          const isOn = reduce || EDGE_STAGE[i] <= stage;
+          return (
+            <motion.line
+              key={i}
+              x1={nodes[a].cx} y1={nodes[a].cy} x2={nodes[b].cx} y2={nodes[b].cy}
+              stroke="#5e6ad2" strokeWidth="1" strokeOpacity="0.5"
+              initial={reduce ? false : { pathLength: 0, opacity: 0 }}
+              animate={isOn ? { pathLength: 1, opacity: 1 } : { pathLength: 0, opacity: 0 }}
+              transition={{
+                duration: 0.4,
+                ease: "easeOut",
+                delay: !reduce && EDGE_STAGE[i] === 0 ? 1 + i * 0.12 : 0,
+              }}
+            />
+          );
+        })}
         {nodes.map((n, i) => (
           <motion.circle
             key={i}
             cx={n.cx} cy={n.cy} r={i === 4 ? 7 : 4}
             fill={i === 4 ? "#5e6ad2" : "#0a0a0a"}
             stroke="#5e6ad2" strokeWidth="1.5"
-            initial={{ scale: 0, opacity: 0 }}
+            initial={reduce ? false : { scale: 0, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.9 + i * 0.1 }}
+            transition={{ duration: 0.5, delay: reduce ? 0 : 0.9 + i * 0.1 }}
           />
         ))}
       </motion.svg>
