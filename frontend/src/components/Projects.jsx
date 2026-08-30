@@ -219,7 +219,9 @@ const CaseStudy = ({ p, onExpand }) => {
       {p.diagram && (
         <div className="mt-14 border border-white/5 bg-[#0f1011] p-6 sm:p-10">
           <h4 className="font-mono2 text-xs uppercase tracking-[0.25em] text-zinc-500 mb-6">Architecture</h4>
-          <Diagram type={p.diagram} accentColor={accentColor} />
+          <div className="min-h-[200px]">
+            <Diagram type={p.diagram} accentColor={accentColor} />
+          </div>
         </div>
       )}
 

@@ -23,12 +23,21 @@ const FeaturedRole = ({ e, delay }) => (
     >
       <div className="flex flex-wrap items-start justify-between gap-4 mb-6">
         <div>
-          <div className="flex flex-wrap items-center gap-2 mb-3">
+          <div className="flex flex-wrap items-center gap-2 mb-4">
             {e.current && <CurrentBadge />}
             <OrgBadge>{e.orgTag}</OrgBadge>
           </div>
-          <h3 className="font-display font-bold text-white text-2xl sm:text-3xl tracking-tight">{e.role}</h3>
-          <p className="text-zinc-400 mt-1 text-base sm:text-lg">{e.org}</p>
+          {e.evidence && (
+            <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1 mb-3">
+              {e.evidence.map((ev) => (
+                <span key={ev} className="font-display font-bold text-white text-lg sm:text-xl tracking-tight">
+                  {ev}
+                </span>
+              ))}
+            </div>
+          )}
+          <h3 className="font-display font-medium text-zinc-400 text-base sm:text-lg tracking-tight">{e.role}</h3>
+          <p className="text-zinc-600 mt-0.5 text-sm">{e.org}</p>
         </div>
         <div className="text-right shrink-0">
           <p className="font-mono2 text-sm text-[#5e6ad2]">{e.period}</p>
@@ -57,12 +66,19 @@ const FeaturedRole = ({ e, delay }) => (
             ))}
           </ul>
 
-          <p className="font-mono2 text-xs uppercase tracking-[0.22em] text-[#5e6ad2]/80 mt-8 mb-3">Key Technologies</p>
-          <div className="flex flex-wrap gap-2">
-            {e.tech.map((t) => (
-              <span key={t} className="font-mono2 text-xs text-zinc-300 border border-zinc-800 px-3 py-1.5">
-                {t}
-              </span>
+          <p className="font-mono2 text-xs uppercase tracking-[0.22em] text-[#5e6ad2]/80 mt-8 mb-4">Key Technologies</p>
+          <div className="space-y-4">
+            {e.techGroups.map((g) => (
+              <div key={g.domain}>
+                <p className="font-mono2 text-[10px] uppercase tracking-[0.2em] text-zinc-600 mb-2">{g.domain}</p>
+                <div className="flex flex-wrap gap-2">
+                  {g.items.map((t) => (
+                    <span key={t} className="font-mono2 text-xs text-zinc-300 border border-zinc-800 px-3 py-1.5">
+                      {t}
+                    </span>
+                  ))}
+                </div>
+              </div>
             ))}
           </div>
         </div>
@@ -71,9 +87,12 @@ const FeaturedRole = ({ e, delay }) => (
           <p className="font-mono2 text-xs uppercase tracking-[0.22em] text-[#5e6ad2]/80 mb-4">Professional Highlights</p>
           <ul className="space-y-3">
             {e.highlights.map((h) => (
-              <li key={h} className="border border-white/5 px-4 py-3 text-sm text-zinc-300 flex items-center gap-3">
-                <span className="text-[#5e6ad2] text-xs shrink-0" aria-hidden="true">◆</span>
-                {h}
+              <li key={h.text} className="border border-white/5 px-4 py-3 flex items-start gap-3">
+                <span className="text-[#5e6ad2] text-xs shrink-0 mt-1" aria-hidden="true">◆</span>
+                <div>
+                  <p className="text-sm font-medium text-zinc-200">{h.text}</p>
+                  {h.fact && <p className="text-xs text-zinc-500 mt-0.5">{h.fact}</p>}
+                </div>
               </li>
             ))}
           </ul>
@@ -84,7 +103,7 @@ const FeaturedRole = ({ e, delay }) => (
         <p className="font-mono2 text-xs uppercase tracking-[0.22em] text-[#5e6ad2]/80 mb-2">{e.metricsSubLabel}</p>
         <h4 className="font-display font-medium text-white text-lg mb-6">{e.metricsLabel}</h4>
         {e.diagram && (
-          <div className="mb-8 border border-white/5 bg-black/20 p-6">
+          <div className="mb-8 border border-white/5 bg-black/20 p-6 min-h-[180px]">
             <PipelineDiagram />
           </div>
         )}
@@ -96,6 +115,9 @@ const FeaturedRole = ({ e, delay }) => (
             </div>
           ))}
         </div>
+        {e.connector && (
+          <p className="mt-6 text-sm text-zinc-500 italic leading-relaxed">{e.connector}</p>
+        )}
       </div>
     </div>
   </Reveal>
