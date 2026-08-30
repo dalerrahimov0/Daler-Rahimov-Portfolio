@@ -1,0 +1,149 @@
+{
+  "project": "Daler Rahimov Portfolio",
+  "theme": "dark",
+  "brand_vibe": "Apple meets Linear and Vercel. Calm, premium, purposeful, and structural. Communicates 'builds real systems' through extreme precision, restraint, and intentional typography.",
+  "typography": {
+    "headings": "Cabinet Grotesk or Outfit (Do not use Inter). Use tight tracking (tracking-tighter) and font-medium to font-semibold for a mechanical, high-precision feel.",
+    "body": "Geist Sans, IBM Plex Sans, or Inter (for high legibility technical reading).",
+    "monospace": "Geist Mono or JetBrains Mono (for overlines, labels, and metrics).",
+    "scale": {
+      "H1": "text-4xl sm:text-5xl lg:text-6xl tracking-tighter leading-[1.1]",
+      "H2": "text-2xl sm:text-3xl lg:text-4xl tracking-tight leading-tight",
+      "H3": "text-xl sm:text-2xl tracking-tight",
+      "Body": "text-base sm:text-lg text-zinc-400 leading-relaxed",
+      "Overline": "text-xs sm:text-sm font-mono uppercase tracking-[0.2em] text-zinc-500"
+    }
+  },
+  "colors": {
+    "background": "#010102 (Linear-style deep void black) or #0A0A0A (Obsidian). Do not use pitch #000000 without texture.",
+    "surface": {
+      "level_1": "bg-[#0f1011] or bg-zinc-900/50",
+      "level_2": "bg-[#191a1b] or bg-zinc-800/50"
+    },
+    "text": {
+      "primary": "text-white or text-zinc-50",
+      "secondary": "text-zinc-400",
+      "tertiary": "text-zinc-600"
+    },
+    "accent": "Subtle desaturated Lavender-Blue (#5e6ad2) or stark pure White for hover states and focus rings. Avoid excessive gradients.",
+    "borders": "border-white/5 or border-zinc-800 for hairline precision."
+  },
+  "visual_enhancers": {
+    "surfaces": "Use 'Optical Clarity' Glassmorphism (backdrop-blur-xl bg-black/60 with 1px border-white/10) exclusively for the sticky navigation. Use solid matte levels for content cards.",
+    "borders": "Hairline precision (1px solid border-white/5). Never rely heavily on drop shadows in dark mode; rely on border contrast.",
+    "textures": "Subtle noise overlay on the hero section background to kill digital flatness."
+  },
+  "layout_and_grids": {
+    "spacing": "Generous. Use p-8, p-12, or p-16 for containers. Leave vast negative space to frame content.",
+    "bento_grid": "Mode A (Tetris Grid). Asymmetrical bento grid for the Expertise section. Mix col-span-4 and col-span-8 to create visual tension.",
+    "alignment": "Strict left-alignment for text block precision. Use standard CSS grid and flexbox to enforce geometric rigidity."
+  },
+  "motion_and_interactions": {
+    "scroll": "MUST use 'lenis' for smooth momentum scrolling. It adds weight and premium feel.",
+    "animations": "Subtle, functional. Use Framer Motion for scroll-reveals (staggered fade-up, opacity 0 to 1, y: 20 to 0).",
+    "hover": "Cards should have a crisp -translate-y-1 lift with a border color shift (e.g., border-white/20).",
+    "hero_reveal": "Masked line-by-line kinetic reveal on load. Words or lines translate Y from below a hidden overflow mask."
+  },
+  "components": {
+    "navigation": "Sticky top, glassmorphism, left-aligned logo/name, right-aligned links. Must have 'data-testid'.",
+    "buttons": "Minimalist pill or sharp rectangles. Primary: bg-white text-black hover:bg-zinc-200. Secondary: bg-transparent border border-zinc-800 hover:border-zinc-500 text-white.",
+    "cards": "Flat background, 1px subtle border. No excessive drop-shadows."
+  },
+  "sections": {
+    "hero": {
+      "layout": "Min-h-[90vh] flex flex-col justify-center. Large masked text reveal. One signature abstract 3D or parallax graphic floating subtly on the right or center.",
+      "content": "'Daler Rahimov', 'Founder, AI Engineer, Data Architect, Product Builder.'",
+      "vibe": "Calm, authoritative."
+    },
+    "about": {
+      "layout": "Manifesto-style. Numbered chapters (01, 02, 03).",
+      "visuals": "Large, faint numbers behind or beside crisp typography answering 'Why I build software'."
+    },
+    "expertise": {
+      "layout": "Bento Grid (4 cards).",
+      "content": "Cards: AI Engineering, Data Architecture, Enterprise AI, Product Development.",
+      "details": "Explain what and why. Use tracing beam borders or crisp hover states."
+    },
+    "featured_projects": {
+      "layout": "Editorial case studies. Vertical stack with massive gaps (gap-32).",
+      "structure": "Each project includes Problem, Solution, Architecture, Tech, Outcome, Lessons.",
+      "projects": ["TajKhona", "Personal AI Architecture", "UNK AI Chatbot", "Medical Billing Predictor"],
+      "visuals": "Use provided abstract images as elegant fallbacks for architecture diagrams."
+    },
+    "experience": {
+      "layout": "Minimalist timeline or structural list.",
+      "content": "Graduate Assistant/Enterprise AI, Data Architect UNK Libraries, IFC Data Analytics."
+    },
+    "writing_and_insights": {
+      "layout": "Publication-style list.",
+      "content": "PAI series Parts 1-4. Placeholder links."
+    },
+    "metrics_strip": {
+      "layout": "react-fast-marquee. Slow, smooth drift. border-y border-white/10.",
+      "content": "250+ ChatGPT Enterprise users • 10+ classrooms • 2,484 library observations • production deployment • three languages."
+    },
+    "footer": {
+      "layout": "Massive padding (py-32). Huge Let's Talk CTA.",
+      "links": "Email, LinkedIn, GitHub. Resume placeholder download button."
+    }
+  },
+  "media": {
+    "rules": "Never use placeholders. Use these abstract minimal images for project architectures and hero accents.",
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1472803828399-39d4ac53c6e5?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjY2NzN8MHwxfHNlYXJjaHwzfHxhYnN0cmFjdCUyMG1pbmltYWwlMjBhcmNoaXRlY3R1cmUlMjBkYXJrfGVufDB8fHx8MTc4ODA0NjEwNHww&ixlib=rb-4.1.0&q=85",
+        "category": "Project Visual: TajKhona",
+        "description": "Abstract architecture, grayscale stairs."
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1488972685288-c3fd157d7c7a?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjY2NzN8MHwxfHNlYXJjaHwyfHxhYnN0cmFjdCUyMG1pbmltYWwlMjBhcmNoaXRlY3R1cmUlMjBkYXJrfGVufDB8fHx8MTc4ODA0NjEwNHww&ixlib=rb-4.1.0&q=85",
+        "category": "Project Visual: Personal AI Architecture",
+        "description": "Low angle grey building structure."
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1644088379091-d574269d422f?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzMjd8MHwxfHNlYXJjaHwxfHxkYXRhJTIwdmlzdWFsaXphdGlvbiUyMGFic3RyYWN0JTIwbm9kZXN8ZW58MHx8fHwxNzg4MDQ2MTA0fDA&ixlib=rb-4.1.0&q=85",
+        "category": "Project Visual: UNK AI Chatbot",
+        "description": "Abstract data nodes blue."
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1545987796-200677ee1011?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzMjd8MHwxfHNlYXJjaHw0fHxkYXRhJTIwdmlzdWFsaXphdGlvbiUyMGFic3RyYWN0JTIwbm9kZXN8ZW58MHx8fHwxNzg4MDQ2MTA0fDA&ixlib=rb-4.1.0&q=85",
+        "category": "Project Visual: Medical Billing Predictor",
+        "description": "Metal structural nodes mapping."
+      }
+    ]
+  },
+  "libraries_to_install": [
+    "framer-motion",
+    "lucide-react",
+    "react-fast-marquee",
+    "@studio-freight/lenis",
+    "clsx",
+    "tailwind-merge"
+  ],
+  "accessibility": {
+    "contrast": "Ensure 4.5:1 for normal text, 3:1 for large text. Zinc-400 on Black meets guidelines. Always provide hover contrast changes.",
+    "testing": "All interactive elements MUST have data-testid. E.g., data-testid='nav-about-link', data-testid='resume-download-button'."
+  },
+  "instructions_to_main_agent": [
+    "Install the required libraries: framer-motion, @studio-freight/lenis, react-fast-marquee, etc.",
+    "Implement a deep dark theme. Do NOT use Inter for headings—use Cabinet Grotesk, Outfit, or Geist Sans with tight tracking.",
+    "Use framer-motion for a line-by-line masked text reveal in the hero.",
+    "Ensure lenis is wrapped globally for smooth scrolling.",
+    "Build the 4 expertise cards strictly in a 4-item bento grid layout (Mode A).",
+    "Structure the projects as editorial case studies with wide padding and use the provided abstract Unsplash images as fallbacks for architecture diagrams.",
+    "Add react-fast-marquee for the factual metrics strip.",
+    "DO NOT create generic centered layouts. Use asymmetrical alignments.",
+    "Never use completely transparent backgrounds over scrollable content. Use a glassmorphism backdrop-blur for the nav.",
+    "Apply 'data-testid' to all buttons and links."
+  ],
+  "UNIVERSAL_GUIDELINES_FOR_MAIN_AGENT": [
+    "Avoid the generic 'AI slop' aesthetic. Make it crisp, structural, and disciplined.",
+    "Use 2-3x more spacing than feels comfortable. p-8, p-12.",
+    "Create depth through 1px border highlights, NOT heavy muddy shadows.",
+    "Do not center align the app container. Respect optical left-alignment.",
+    "Never use AI emoji characters for icons. Use lucide-react.",
+    "Ensure all interactive elements have hover and focus states.",
+    "Do not use transparent overlays without blur.",
+    "All interactive elements MUST include data-testid attribute for robust testing."
+  ]
+}
