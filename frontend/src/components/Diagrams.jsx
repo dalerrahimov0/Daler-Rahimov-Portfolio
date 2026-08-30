@@ -1,18 +1,27 @@
 import { motion, useReducedMotion } from "framer-motion";
 import { useMediaQuery } from "@/hooks/use-media-query";
 
-const Box = ({ x, y, w = 120, h = 44, label, accent = false, color = "#5e6ad2", delay = 0, reduce }) => (
-  <motion.g
-    initial={reduce ? false : { opacity: 0, scale: 0.9 }}
-    whileInView={{ opacity: 1, scale: 1 }}
-    viewport={{ once: true }}
-    transition={{ duration: 0.5, delay }}
-  >
+// Framer Motion's whileInView relies on IntersectionObserver to flip elements
+// from `initial` to their visible state. On mobile Safari (and mobile Chrome
+// on iOS, which also runs WebKit), IntersectionObserver targeting SVG <g>
+// elements is unreliable — the callback can simply never fire for a group
+// element that has no well-defined content box of its own. That leaves nodes
+// stuck at initial={opacity:0}. SVG <line> elements are less affected since
+// they carry their own explicit geometry (x1/y1/x2/y2), which is why edges
+// "sometimes render" while node groups stay invisible — the exact symptom
+// reported. These are architecture diagrams, not decoration: below the mobile
+// breakpoint we skip whileInView/IntersectionObserver entirely and render the
+// final visible state directly. Desktop keeps the richer scroll-triggered
+// animation unchanged.
+const Box = ({ x, y, w = 120, h = 44, label, accent = false, color = "#5e6ad2", delay = 0, reduce, animated = true }) => {
+  const rect = (
     <rect
       x={x - w / 2} y={y - h / 2} width={w} height={h}
       fill={accent ? color : "#0f1011"}
       stroke={accent ? color : "#3f3f46"} strokeWidth="1" rx="2"
     />
+  );
+  const text = (
     <text
       x={x} y={y} textAnchor="middle" dominantBaseline="central"
       fill={accent ? "#ffffff" : "#d4d4d8"} fontSize="12"
@@ -20,19 +29,41 @@ const Box = ({ x, y, w = 120, h = 44, label, accent = false, color = "#5e6ad2", 
     >
       {label}
     </text>
-  </motion.g>
-);
+  );
 
-const Edge = ({ x1, y1, x2, y2, color = "#5e6ad2", delay = 0, reduce }) => (
-  <motion.line
-    x1={x1} y1={y1} x2={x2} y2={y2}
-    stroke={color} strokeWidth="1" strokeOpacity="0.55"
-    initial={reduce ? false : { pathLength: 0 }}
-    whileInView={{ pathLength: 1 }}
-    viewport={{ once: true }}
-    transition={{ duration: 0.9, delay, ease: "easeOut" }}
-  />
-);
+  if (!animated || reduce) {
+    return <g>{rect}{text}</g>;
+  }
+
+  return (
+    <motion.g
+      initial={{ opacity: 0, scale: 0.9 }}
+      whileInView={{ opacity: 1, scale: 1 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.5, delay }}
+    >
+      {rect}
+      {text}
+    </motion.g>
+  );
+};
+
+const Edge = ({ x1, y1, x2, y2, color = "#5e6ad2", delay = 0, reduce, animated = true }) => {
+  if (!animated || reduce) {
+    return <line x1={x1} y1={y1} x2={x2} y2={y2} stroke={color} strokeWidth="1" strokeOpacity="0.55" />;
+  }
+
+  return (
+    <motion.line
+      x1={x1} y1={y1} x2={x2} y2={y2}
+      stroke={color} strokeWidth="1" strokeOpacity="0.55"
+      initial={{ pathLength: 0 }}
+      whileInView={{ pathLength: 1 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.9, delay, ease: "easeOut" }}
+    />
+  );
+};
 
 // Every diagram is a plain SVG with only a viewBox and CSS width:100%/height:auto.
 // Several mobile browsers (notably iOS/mobile Safari) fail to derive an SVG's
@@ -74,11 +105,11 @@ export const PAIDiagram = () => {
     return (
       <ResponsiveSvg w={380} h={470} role="img" aria-label="Personal AI Architecture diagram: core connected to skills, hooks, memory, agents, tools, and pipelines">
         {nodes.map((n, i) => (
-          <Edge key={n.label} x1={core.x} y1={core.y} x2={n.x} y2={n.y} delay={0.3 + i * 0.15} reduce={reduce} />
+          <Edge key={n.label} x1={core.x} y1={core.y} x2={n.x} y2={n.y} reduce={reduce} animated={false} />
         ))}
-        <Box x={core.x} y={core.y} w={190} h={56} label="Core Context" accent delay={0.1} reduce={reduce} />
+        <Box x={core.x} y={core.y} w={190} h={56} label="Core Context" accent reduce={reduce} animated={false} />
         {nodes.map((n, i) => (
-          <Box key={n.label} x={n.x} y={n.y} w={140} h={44} label={n.label} delay={0.5 + i * 0.15} reduce={reduce} />
+          <Box key={n.label} x={n.x} y={n.y} w={140} h={44} label={n.label} reduce={reduce} animated={false} />
         ))}
       </ResponsiveSvg>
     );
@@ -112,17 +143,17 @@ export const TajKhonaDiagram = ({ accentColor = "#5e6ad2" }) => {
     // node instead of a single cramped row.
     return (
       <ResponsiveSvg w={380} h={430} role="img" aria-label="TajKhona architecture: Next.js client connected to Supabase services">
-        <Edge x1={190} y1={73} x2={190} y2={132} delay={0.3} reduce={reduce} />
-        <Edge x1={190} y1={188} x2={100} y2={255} delay={0.6} reduce={reduce} />
-        <Edge x1={190} y1={188} x2={280} y2={255} delay={0.75} reduce={reduce} />
-        <Edge x1={190} y1={188} x2={100} y2={365} delay={0.9} reduce={reduce} />
-        <Edge x1={190} y1={188} x2={280} y2={365} delay={1.05} reduce={reduce} />
-        <Box x={190} y={50} w={170} h={46} label="Next.js Client" delay={0.1} reduce={reduce} />
-        <Box x={190} y={160} w={190} h={56} label="Supabase Platform" accent color={accentColor} delay={0.4} reduce={reduce} />
-        <Box x={100} y={280} w={150} h={42} label="Auth + Postgres" delay={0.7} reduce={reduce} />
-        <Box x={280} y={280} w={130} h={42} label="Maps" delay={0.85} reduce={reduce} />
-        <Box x={100} y={390} w={130} h={42} label="AI Layer" delay={1.0} reduce={reduce} />
-        <Box x={280} y={390} w={150} h={42} label="Analytics + Admin" delay={1.15} reduce={reduce} />
+        <Edge x1={190} y1={73} x2={190} y2={132} reduce={reduce} animated={false} />
+        <Edge x1={190} y1={188} x2={100} y2={255} reduce={reduce} animated={false} />
+        <Edge x1={190} y1={188} x2={280} y2={255} reduce={reduce} animated={false} />
+        <Edge x1={190} y1={188} x2={100} y2={365} reduce={reduce} animated={false} />
+        <Edge x1={190} y1={188} x2={280} y2={365} reduce={reduce} animated={false} />
+        <Box x={190} y={50} w={170} h={46} label="Next.js Client" reduce={reduce} animated={false} />
+        <Box x={190} y={160} w={190} h={56} label="Supabase Platform" accent color={accentColor} reduce={reduce} animated={false} />
+        <Box x={100} y={280} w={150} h={42} label="Auth + Postgres" reduce={reduce} animated={false} />
+        <Box x={280} y={280} w={130} h={42} label="Maps" reduce={reduce} animated={false} />
+        <Box x={100} y={390} w={130} h={42} label="AI Layer" reduce={reduce} animated={false} />
+        <Box x={280} y={390} w={150} h={42} label="Analytics + Admin" reduce={reduce} animated={false} />
       </ResponsiveSvg>
     );
   }
@@ -159,10 +190,10 @@ export const PipelineDiagram = () => {
     return (
       <ResponsiveSvg w={340} h={510} role="img" aria-label="Library analytics pipeline: Qualtrics survey data flows through Power Query and Microsoft Fabric into a semantic model and Power BI">
         {steps.slice(0, -1).map((s, i) => (
-          <Edge key={s.label} x1={170} y1={s.y + 23} x2={170} y2={steps[i + 1].y - 23} delay={0.3 + i * 0.2} reduce={reduce} />
+          <Edge key={s.label} x1={170} y1={s.y + 23} x2={170} y2={steps[i + 1].y - 23} reduce={reduce} animated={false} />
         ))}
         {steps.map((s, i) => (
-          <Box key={s.label} x={170} y={s.y} w={260} h={46} label={s.label} accent={i === 4} delay={0.1 + i * 0.2} reduce={reduce} />
+          <Box key={s.label} x={170} y={s.y} w={260} h={46} label={s.label} accent={i === 4} reduce={reduce} animated={false} />
         ))}
       </ResponsiveSvg>
     );
