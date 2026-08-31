@@ -478,3 +478,83 @@ export const MANIFESTO = [
     body: "Continuity over novelty. Whether it's a Fabric lakehouse, a personal AI system, or a production marketplace, most “hard” problems turn out to be continuity problems — memory, structure, and trust that survive past the first session. Get that right and intelligence stops being the bottleneck.",
   },
 ];
+
+export const GRAPH = {
+  center: { id: "core", label: "Systems Thinking" },
+  concepts: [
+    {
+      id: "systems",
+      label: "Systems",
+      angle: 0,
+      chain: [
+        { label: "Personal AI Architecture" },
+        { label: "Hodor" },
+        { label: "Continuity over Memory" },
+      ],
+    },
+    {
+      id: "products",
+      label: "Products",
+      angle: 51.4,
+      chain: [
+        { label: "TajKhona" },
+        { label: "Founder" },
+        { label: "Production" },
+        { label: "Real Users" },
+      ],
+    },
+    {
+      id: "enterprise",
+      label: "Enterprise",
+      angle: 102.8,
+      chain: [
+        { label: "Graduate Assistant" },
+        { label: "ChatGPT Enterprise" },
+        { label: "250+ Users" },
+        { label: "10+ Classrooms" },
+      ],
+    },
+    {
+      id: "architecture",
+      label: "Architecture",
+      angle: 154.3,
+      chain: [
+        { label: "PAI" },
+        { label: "Library Analytics" },
+        { label: "TajKhona" },
+        { label: "Enterprise AI" },
+      ],
+    },
+    {
+      id: "research",
+      label: "Research",
+      angle: 205.7,
+      chain: [
+        { label: "PAI Writing Series" },
+        { label: "4 Parts Published" },
+        { label: "Continuity Problem" },
+      ],
+    },
+    {
+      id: "analytics",
+      label: "Analytics",
+      angle: 257.1,
+      chain: [
+        { label: "Library Observations" },
+        { label: "2,484" },
+        { label: "Microsoft Fabric" },
+        { label: "Power BI" },
+      ],
+    },
+    {
+      id: "ai",
+      label: "AI",
+      angle: 308.6,
+      chain: [
+        { label: "UNK Chatbot" },
+        { label: "Pinecone + GPT" },
+        { label: "Document-Grounded Answers" },
+      ],
+    },
+  ],
+};
