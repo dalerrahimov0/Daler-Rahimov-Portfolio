@@ -223,11 +223,11 @@ export const EXPERIENCE_FEATURED = [
   },
   {
     id: "data-architect",
-    current: true,
+    current: false,
     role: "Data Architect",
     org: "UNK Libraries",
     orgTag: "University of Nebraska Kearney",
-    period: "Aug 2025 — Present",
+    period: "May 2026 — Aug 2026",
     note: "Concurrent with Graduate Assistantship",
     focus: "Data Architecture, ETL Pipelines & Library Analytics",
     overview: "Designing the UNK Library's data ecosystem — from raw survey and space-usage data to a governed semantic model that powers institutional decision-making.",
@@ -381,7 +381,7 @@ export const TIMELINE = [
     current: true,
   },
   {
-    period: "2025 — Present",
+    period: "2026 — Present",
     tag: "Startup",
     icon: "building",
     title: "Founder of TajKhona",

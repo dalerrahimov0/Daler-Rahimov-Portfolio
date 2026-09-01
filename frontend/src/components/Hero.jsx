@@ -19,44 +19,56 @@ export default function Hero() {
   return (
     <section id="top" data-testid="hero-section" className="grain relative min-h-[92vh] flex flex-col justify-center overflow-hidden">
       <div data-testid="hero-text-column" className="mx-auto max-w-6xl px-6 w-full relative z-10 pt-24">
-        <h1 className="font-display font-bold text-white tracking-tighter leading-[1.02] text-5xl sm:text-6xl lg:text-8xl">
-          {LINES.map((line, i) => (
-            <span key={line} className="mask-line">
-              <motion.span
-                className="block"
-                initial={reduce ? false : { y: "110%" }}
-                animate={{ y: 0 }}
-                transition={{ duration: 0.9, delay: 0.2 + i * 0.14, ease: [0.22, 1, 0.36, 1] }}
-              >
-                {line}
-              </motion.span>
-            </span>
-          ))}
-        </h1>
-        <motion.p
-          initial={reduce ? false : { opacity: 0, y: 14 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.75 }}
-          className="mt-6 font-display font-medium text-zinc-300 tracking-tight text-xl sm:text-2xl lg:text-3xl"
-          data-testid="hero-identity"
-        >
-          AI Engineer <span className="text-[#5e6ad2]">•</span> Data Architect <span className="text-[#5e6ad2]">•</span> Founder
-        </motion.p>
-        <motion.p
-          initial={reduce ? false : { opacity: 0, y: 14 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.9 }}
-          className="mt-8 max-w-xl text-sm sm:text-base text-zinc-500 leading-relaxed"
-          data-testid="hero-tagline"
-        >
-          Building AI systems, data platforms, and production software that connect
-          strategy, data, and execution.
-        </motion.p>
+        {/* w-fit on these three avoid-list blocks (heading, button row, active
+            systems) is load-bearing for ConceptGraph's overlap check, not
+            just tidiness — without it a plain block/flex div reports its
+            FULL flow-container width (the whole text column) as its
+            getBoundingClientRect(), even though the visible content (a line
+            of text, two buttons, a handful of tag pills) only occupies a
+            fraction of that. An avoid-rect that wide would count as
+            "overlapping" for a panel positioned anywhere near this column,
+            regardless of how much real empty space is actually between them. */}
+        <div data-testid="hero-heading-block" className="w-fit">
+          <h1 className="font-display font-bold text-white tracking-tighter leading-[1.02] text-5xl sm:text-6xl lg:text-8xl">
+            {LINES.map((line, i) => (
+              <span key={line} className="mask-line">
+                <motion.span
+                  className="block"
+                  initial={reduce ? false : { y: "110%" }}
+                  animate={{ y: 0 }}
+                  transition={{ duration: 0.9, delay: 0.2 + i * 0.14, ease: [0.22, 1, 0.36, 1] }}
+                >
+                  {line}
+                </motion.span>
+              </span>
+            ))}
+          </h1>
+          <motion.p
+            initial={reduce ? false : { opacity: 0, y: 14 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.75 }}
+            className="mt-6 font-display font-medium text-zinc-300 tracking-tight text-xl sm:text-2xl lg:text-3xl"
+            data-testid="hero-identity"
+          >
+            AI Engineer <span className="text-[#5e6ad2]">•</span> Data Architect <span className="text-[#5e6ad2]">•</span> Founder
+          </motion.p>
+          <motion.p
+            initial={reduce ? false : { opacity: 0, y: 14 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.9 }}
+            className="mt-8 max-w-xl text-sm sm:text-base text-zinc-500 leading-relaxed"
+            data-testid="hero-tagline"
+          >
+            Building AI systems, data platforms, and production software that connect
+            strategy, data, and execution.
+          </motion.p>
+        </div>
         <motion.div
           initial={reduce ? false : { opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 1.05 }}
-          className="mt-12 flex flex-wrap items-center gap-4"
+          className="mt-12 flex flex-wrap items-center gap-4 w-fit"
+          data-testid="hero-button-row"
         >
           <a
             href="#projects"
@@ -97,7 +109,7 @@ export default function Hero() {
           initial={reduce ? false : { opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 1.35 }}
-          className="mt-10"
+          className="mt-10 w-fit"
           data-testid="hero-active-systems"
         >
           <p className="font-mono2 text-xs uppercase tracking-[0.25em] text-zinc-500 mb-3">Active Systems</p>

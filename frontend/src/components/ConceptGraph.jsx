@@ -73,172 +73,367 @@ const ringPos = (cfg, angleDeg, i) => {
   return { x: cfg.w / 2 + radiusX * Math.sin(rad), y: cfg.h / 2 - radiusY * Math.cos(rad) };
 };
 
-// The panel anchors just outside the active node, offset along a direction
-// blended away from the node's own spoke (see TANGENT_DEG below), then its
-// box grows FURTHER outward from that anchor — away from the node, never
-// back through it — which is what keeps it off the node regardless of panel
-// size: growing back toward the anchor's own origin would have to pass
-// directly over the node's position. Which edge of the box sits at the
-// anchor (and so which direction it grows) depends on which side of the
-// circle the node is on, so the box always extends toward the nearest open
-// canvas space instead of off an edge.
+// --- ChainDetail positioning ---------------------------------------------
 //
-// Clearance is applied per-axis (not as one distance split proportionally
-// along the diagonal) — decomposing a single offset by dirX/dirY starves
-// whichever axis has the shallower component (e.g. Enterprise at 102.8deg is
-// 97% horizontal, leaving only ~1px of vertical gap at any offset small
-// enough not to blow past the viewport once the edge-clamp below shifts it
-// back). Guaranteeing NODE_CLEARANCE independently on each active axis means
-// there's always real separation on the axis that matters, however shallow
-// the angle, even after that shift.
-const NODE_CLEARANCE = 92;
+// Everything below is measured, not estimated: the panel's anchor comes from
+// the ACTIVE NODE'S real getBoundingClientRect() (queried off the graph's own
+// container by its existing data-testid) and the graph CONTAINER's real
+// getBoundingClientRect(), read fresh every time a node activates or the
+// viewport resizes. Nothing here assumes a container size, a viewBox-to-pixel
+// ratio, or which layout context (hero overlay vs. normal-flow mobile
+// section) it's running in — the same code measures correctly either way
+// because it never projects viewBox units onto an assumed box; it reads the
+// box that's actually there.
+const NODE_GAP = 16; // clearance from the active node's own rendered edge
 const PANEL_MAX_W = 200;
-// Low enough that only a near-exact 0/90/180/270 angle reads as "center"/
-// "middle" (no lateral offset on that axis) — with 7 concepts spaced 51.4deg
-// apart, no single TANGENT_DEG below keeps all seven a full 8.6deg (the old
-// threshold's dead zone) from an axis, and collapsing to zero offset on an
-// axis is exactly what let the panel drift back onto the chain's ray.
-const SIDE_THRESHOLD = 0.02;
 
-// The chain for the active concept extends OUTWARD along the concept's own
-// angle (ringPos with increasing i) — so anchoring the panel further out on
-// that exact same ray, as a pure radial offset once did, plants it directly
-// in the chain's own path. Offsetting the anchor's angle away from the
-// concept's angle before applying NODE_CLEARANCE moves the panel beside the
-// ray instead of along it, while still measuring the offset from the node's
-// true position so it stays close.
+// The chain for the active concept extends OUTWARD along the container-center
+// -> node vector (ringPos with increasing i) — so anchoring the panel further
+// out on that exact same ray would plant it directly in the chain's own path.
+// Rotating that real (measured) vector by TANGENT_DEG before picking a side
+// moves the panel beside the ray instead of along it, while the anchor point
+// itself still comes from the node's true rendered edge, so it stays close.
 const TANGENT_DEG = 45;
+const CLAMP_MARGIN = 12;
 
 const H_TRANSFORM = { left: "0%", right: "-100%", center: "-50%" };
 const V_TRANSFORM = { top: "0%", bottom: "-100%", middle: "-50%" };
+// A little breathing room past an avoid-rect's edge, not just exact tangency
+// — two boxes nudged to touch at 0px can flip into a fractional-pixel overlap
+// from ordinary sub-pixel layout rounding.
+const AVOID_MARGIN = 4;
 
-const panelAnchor = (cfg, angleDeg) => {
-  const node = ringPos(cfg, angleDeg, 0);
-  const blendRad = toRad(angleDeg + TANGENT_DEG);
-  const dirX = Math.sin(blendRad);
-  const dirY = -Math.cos(blendRad);
-  const hSide = dirX > SIDE_THRESHOLD ? "left" : dirX < -SIDE_THRESHOLD ? "right" : "center";
-  const vSide = dirY > SIDE_THRESHOLD ? "top" : dirY < -SIDE_THRESHOLD ? "bottom" : "middle";
-  return {
-    x: node.x + (hSide === "center" ? 0 : Math.sign(dirX) * NODE_CLEARANCE),
-    y: node.y + (vSide === "middle" ? 0 : Math.sign(dirY) * NODE_CLEARANCE),
-    hSide,
-    vSide,
-  };
+// Anchors the panel to one side of the node's real rendered box, offset by a
+// small constant on-screen gap — a fixed pixel distance instead of a value
+// scaled by viewBox units, which is what previously let the offset balloon
+// into hundreds of pixels at some container sizes. hSide/vSide can each also
+// be "center"/"middle", which anchors that axis to the node's own center
+// instead of past one of its edges — the pure-horizontal/pure-vertical
+// placements this produces (directly beside or above/below the node, not
+// diagonally offset) are what let the panel dodge a squeeze that blocks both
+// diagonals: a node with content close above AND below it, but open room to
+// either side, has no diagonal placement that clears both at once. Returns
+// viewport px.
+const sideAnchor = (nodeRect, hSide, vSide) => ({
+  x: hSide === "center" ? nodeRect.left + nodeRect.width / 2 : hSide === "left" ? nodeRect.right + NODE_GAP : nodeRect.left - NODE_GAP,
+  y: vSide === "middle" ? nodeRect.top + nodeRect.height / 2 : vSide === "top" ? nodeRect.bottom + NODE_GAP : nodeRect.top - NODE_GAP,
+});
+
+// The viewport-space box the panel would occupy for a given anchor/side/nudge
+// — shared by the bounds clamp and the avoid-rect separation below so both
+// reason about the exact same box.
+const panelBox = (ax, ay, w, h, hSide, vSide, dx, dy) => {
+  const left = (hSide === "center" ? ax - w / 2 : hSide === "left" ? ax : ax - w) + dx;
+  const top = (vSide === "middle" ? ay - h / 2 : vSide === "top" ? ay : ay - h) + dy;
+  return { left, right: left + w, top, bottom: top + h };
 };
 
-// Hand-computed offsets get the panel close, but exact rendered height/width
-// depend on real font metrics and how each label's text wraps — both vary per
-// concept in ways that are hard to predict precisely by hand (confirmed by
-// measuring against the actual DOM: a few concepts came out a handful of
-// pixels taller than estimated). So after the anchor/side placement below,
-// this measures the panel's real rendered box and nudges it back inside the
-// nearest clipping ancestor (the hero section, which clips its own overflow)
-// and the viewport, if it would otherwise poke out on any edge.
-const CLAMP_MARGIN = 12;
+// The real, measured container-center -> node-center vector, rotated away
+// from the chain's own outward ray (see TANGENT_DEG above) — this is only
+// used to RANK which candidate placement (see PLACEMENTS below) to try first;
+// the chain for the active concept extends outward along the un-rotated
+// version of this same vector, so the diagonal on the far side of that
+// rotation is the one that naturally reads as "beside the ray" rather than
+// on top of it, when more than one candidate is otherwise equally clean.
+const preferredDiagonal = (containerRect, nodeRect) => {
+  const nodeCenter = { x: nodeRect.left + nodeRect.width / 2, y: nodeRect.top + nodeRect.height / 2 };
+  const containerCenter = { x: containerRect.left + containerRect.width / 2, y: containerRect.top + containerRect.height / 2 };
+  const radial = { x: nodeCenter.x - containerCenter.x, y: nodeCenter.y - containerCenter.y };
+  const rad = toRad(TANGENT_DEG);
+  const blendX = radial.x * Math.cos(rad) - radial.y * Math.sin(rad);
+  const blendY = radial.x * Math.sin(rad) + radial.y * Math.cos(rad);
+  return { hSide: blendX >= 0 ? "left" : "right", vSide: blendY >= 0 ? "top" : "bottom" };
+};
 
-const ChainDetail = ({ concept, reduce, cfg }) => {
+// Every placement around the node worth trying: the four diagonals (NE/NW/
+// SE/SW) plus the four compass points (N/S/E/W, pure horizontal or vertical —
+// "center"/"middle" on the axis that isn't offset). Which one actually avoids
+// overlapping real content depends on what's around the node on screen, not
+// on the concept's angle alone, so every placement is measured and scored
+// (see resolveQuadrant below) and the cleanest one wins; the diagonal above
+// just orders the search so the "natural" placement is tried first when more
+// than one is otherwise equally clean.
+const PLACEMENTS = [
+  { hSide: "left", vSide: "top" },
+  { hSide: "right", vSide: "top" },
+  { hSide: "left", vSide: "bottom" },
+  { hSide: "right", vSide: "bottom" },
+  { hSide: "left", vSide: "middle" },
+  { hSide: "right", vSide: "middle" },
+  { hSide: "center", vSide: "top" },
+  { hSide: "center", vSide: "bottom" },
+];
+
+const placementSearchOrder = (preferred) => {
+  const rank = (p) => (p.hSide === preferred.hSide ? 1 : 0) + (p.vSide === preferred.vSide ? 1 : 0);
+  return [...PLACEMENTS].sort((a, b) => rank(b) - rank(a));
+};
+
+const DEFAULT_POS = { left: 0, top: 0, hSide: "left", vSide: "top", dx: 0, dy: 0 };
+
+const ChainDetail = ({ concept, reduce, containerRef }) => {
   const panelRef = useRef(null);
-  const [clamp, setClamp] = useState({ dx: 0, dy: 0 });
+  const [pos, setPos] = useState(DEFAULT_POS);
 
   useLayoutEffect(() => {
-    if (!concept || !panelRef.current) return;
-    const rect = panelRef.current.getBoundingClientRect();
-    // Only the Hero overlay usage has a "hero-section" ancestor to clip
-    // against (it has its own overflow-hidden); the standalone mobile
-    // section (ConceptGraphSection) doesn't, so clipEl is null there and
-    // this falls back to the viewport itself. That fallback has to be
-    // visualViewport, not window.innerHeight: on a real touch device the
-    // two diverge whenever something shifts the on-screen keyboard or the
-    // browser's dynamic toolbar — visualViewport tracks what's actually
-    // visible, innerHeight doesn't — and this effect runs right as a tap
-    // focuses the node, exactly the moment that can happen.
-    const clipEl = panelRef.current.closest('[data-testid="hero-section"]');
-    const viewportHeight = window.visualViewport ? window.visualViewport.height : window.innerHeight;
-    const clipRect = clipEl ? clipEl.getBoundingClientRect() : { top: 0, bottom: viewportHeight };
-    const vw = document.documentElement.clientWidth;
+    if (!concept) return;
 
-    // The graph's container is now fluid (see Hero.jsx), so at the narrow
-    // end of that range the node ring — and this panel, anchored close to
-    // it — sits much nearer the hero's text column than it did at the old
-    // fixed size. The viewport-edge clamp below has no idea that column is
-    // there, so a panel on the left side of the ring could clear the
-    // viewport's own edge while still landing on top of the hero text.
-    // "hero-text-column" scopes the search to that column (excluding this
-    // graph, its sibling) rather than the whole hero section; within it,
-    // elements with a real max-width are the ones deliberately kept
-    // narrower than the container — the actual content edge, not the
-    // full-width box a block element reports by default.
-    const textColumn = clipEl && clipEl.querySelector('[data-testid="hero-text-column"]');
-    let textColumnRight = null;
-    if (textColumn) {
-      const capped = [...textColumn.querySelectorAll("*")].filter((el) => getComputedStyle(el).maxWidth !== "none");
-      if (capped.length) textColumnRight = Math.max(...capped.map((el) => el.getBoundingClientRect().right));
-    }
-    const minLeft = textColumnRight != null ? Math.max(CLAMP_MARGIN, textColumnRight + CLAMP_MARGIN) : CLAMP_MARGIN;
+    const recompute = () => {
+      const containerEl = containerRef.current;
+      const panelEl = panelRef.current;
+      if (!containerEl || !panelEl) return;
+      const nodeEl = containerEl.querySelector(`[data-testid="concept-graph-node-${concept.id}"]`);
+      if (!nodeEl) return;
 
-    let dx = 0;
-    let dy = 0;
-    const clampToEdges = () => {
-      const left = rect.left + dx;
-      const right = rect.right + dx;
-      const top = rect.top + dy;
-      const bottom = rect.bottom + dy;
-      if (left < minLeft) dx += minLeft - left;
-      else if (right > vw - CLAMP_MARGIN) dx += vw - CLAMP_MARGIN - right;
-      if (top < clipRect.top + CLAMP_MARGIN) dy += clipRect.top + CLAMP_MARGIN - top;
-      else if (bottom > clipRect.bottom - CLAMP_MARGIN) dy += clipRect.bottom - CLAMP_MARGIN - bottom;
-    };
-    clampToEdges();
+      const containerRect = containerEl.getBoundingClientRect();
+      const nodeRect = nodeEl.getBoundingClientRect();
+      const panelRect = panelEl.getBoundingClientRect();
+      const w = panelRect.width;
+      const h = panelRect.height;
 
-    // The anchor offset only guarantees clearance from the ACTIVE node — a
-    // neighboring node's badge can still fall inside the panel's footprint
-    // once it grows toward it (e.g. Enterprise's panel growing down-right
-    // toward Architecture's badge). For each badge the (edge-clamped) panel
-    // still overlaps, find the cheapest of the four ways to separate them —
-    // push past the badge's right/left/bottom/top edge, whichever needs the
-    // smallest shift — and apply the cheapest one that doesn't itself violate
-    // the viewport/hero bounds (falling back to the next-cheapest, then to
-    // the cheapest outright if none fit cleanly). Re-run the edge clamp after,
-    // since even a bounds-respecting nudge can still land exactly on a margin.
-    if (clipEl) {
-      const badgeEls = clipEl.querySelectorAll('[data-testid^="concept-graph-node-"]');
-      badgeEls.forEach((el) => {
+      // Only the Hero overlay usage has a "hero-section" ancestor (it clips
+      // its own overflow); the standalone mobile section (ConceptGraphSection)
+      // doesn't, so there the panel is bounded by its own container's rect on
+      // BOTH axes, not the viewport — it has the section to itself, with no
+      // sibling content to dodge, and the container is far smaller than the
+      // page around it (capped by ConceptGraphSection's max-w wrapper). A
+      // viewport-height vertical bound there let the search treat "300px
+      // below the node, still technically on the very tall page" as a clean,
+      // zero-overlap placement — legal by that bound, but nowhere near the
+      // node or the graph's own visual footprint. Clamping to the container's
+      // real height keeps every candidate's search space roughly the size of
+      // the graph itself, so "closest to the node" and "fits the bounds" stay
+      // in agreement instead of pulling in different directions.
+      const heroEl = containerEl.closest('[data-testid="hero-section"]');
+      const vw = document.documentElement.clientWidth;
+      const bounds = heroEl
+        ? { left: 0, right: vw, top: heroEl.getBoundingClientRect().top, bottom: heroEl.getBoundingClientRect().bottom }
+        : { left: containerRect.left, right: containerRect.right, top: containerRect.top, bottom: containerRect.bottom };
+
+      // Every sibling content block the panel must never overlap, gathered by
+      // its own stable data-testid rather than one hardcoded boundary box —
+      // in the hero: the heading/tagline block, the button row, the info-cards
+      // row, and the Active Systems tag row. Plus, in both contexts, the
+      // graph's own other node badges and the active concept's own chain —
+      // the anchor only guarantees clearance from the ACTIVE node itself; a
+      // neighboring badge, or the chain growing out from this same node, can
+      // still fall inside the panel's footprint once it's sized.
+      const avoidRects = [];
+      if (heroEl) {
+        ['[data-testid="hero-heading-block"]', '[data-testid="hero-button-row"]', '[data-testid="hero-info-cards"]', '[data-testid="hero-active-systems"]'].forEach((sel) => {
+          const el = heroEl.querySelector(sel);
+          if (el) avoidRects.push(el.getBoundingClientRect());
+        });
+      }
+      containerEl.querySelectorAll('[data-testid^="concept-graph-node-"]').forEach((el) => {
         if (el.getAttribute("data-testid") === `concept-graph-node-${concept.id}`) return;
-        const b = el.getBoundingClientRect();
-        const left = rect.left + dx;
-        const right = rect.right + dx;
-        const top = rect.top + dy;
-        const bottom = rect.bottom + dy;
-        const overlapX = Math.min(right, b.right) - Math.max(left, b.left);
-        const overlapY = Math.min(bottom, b.bottom) - Math.max(top, b.top);
-        if (overlapX <= 0 || overlapY <= 0) return;
-
-        const options = [
-          { axis: "x", delta: b.right - left },
-          { axis: "x", delta: b.left - right },
-          { axis: "y", delta: b.bottom - top },
-          { axis: "y", delta: b.top - bottom },
-        ].sort((a, c) => Math.abs(a.delta) - Math.abs(c.delta));
-
-        const fitsBounds = (opt) =>
-          opt.axis === "x"
-            ? left + opt.delta >= CLAMP_MARGIN && right + opt.delta <= vw - CLAMP_MARGIN
-            : top + opt.delta >= clipRect.top + CLAMP_MARGIN && bottom + opt.delta <= clipRect.bottom - CLAMP_MARGIN;
-
-        const chosen = options.find(fitsBounds) || options[0];
-        if (chosen.axis === "x") dx += chosen.delta;
-        else dy += chosen.delta;
+        avoidRects.push(el.getBoundingClientRect());
       });
-      clampToEdges();
-    }
+      const chainGroup = containerEl.querySelector('[data-testid="concept-graph-chain-nodes"]');
+      if (chainGroup) avoidRects.push(chainGroup.getBoundingClientRect());
 
-    setClamp((prev) => (prev.dx === dx && prev.dy === dy ? prev : { dx, dy }));
+      // The two "hard" rects — the ACTIVE node's own badge, and the graph's
+      // CENTER node — each inflated by NODE_GAP on every side. Every other
+      // node badge above is already covered by the generic querySelectorAll
+      // loop; these two aren't (the active node is deliberately excluded from
+      // it, and the center dot is a raw SVG <circle> with no
+      // "concept-graph-node-" testid, so the loop's selector never matched
+      // it — confirmed via screenshot: a panel landing toward the middle of
+      // the ring could cut straight into it). Both get the exact same
+      // treatment as each other: pushed into avoidRects for the general pass
+      // below, AND kept as their own references so resolveQuadrant can run
+      // the dedicated fallback pass on each and score them as a hard
+      // constraint — sideAnchor only guarantees NODE_GAP clearance from the
+      // active node along the one axis a placement naturally offsets from
+      // (nothing at all from the center, which sideAnchor doesn't know
+      // about), and any later nudge made to clear a sibling badge/the chain
+      // has no reason not to drift across either one.
+      const centerEl = containerEl.querySelector('[data-testid="concept-graph-center-node"]');
+      const inflate = (r) => ({ left: r.left - NODE_GAP, right: r.right + NODE_GAP, top: r.top - NODE_GAP, bottom: r.bottom + NODE_GAP });
+      const hardRects = [inflate(nodeRect)];
+      if (centerEl) hardRects.push(inflate(centerEl.getBoundingClientRect()));
+      avoidRects.push(...hardRects);
+
+      // Resolves ONE candidate quadrant: clamp it inside bounds, then — for
+      // each avoid-rect it still overlaps — find the cheapest of the four
+      // ways to separate them (push past its right/left/bottom/top edge,
+      // whichever needs the smallest shift), preferring whichever cheapest
+      // option doesn't itself violate bounds. Repeated over several passes
+      // since separating from one rect can reintroduce overlap with another
+      // already-cleared one; stops early once nothing moves. Scored by how
+      // many rects it still overlaps after that (ideally zero) and, as a
+      // tiebreaker, how far it had to shift from its natural anchor.
+      const resolveQuadrant = (hSide, vSide) => {
+        const a = sideAnchor(nodeRect, hSide, vSide);
+        let dx = 0;
+        let dy = 0;
+        const clampToBounds = () => {
+          let b = panelBox(a.x, a.y, w, h, hSide, vSide, dx, dy);
+          if (b.left < bounds.left + CLAMP_MARGIN) dx += bounds.left + CLAMP_MARGIN - b.left;
+          else if (b.right > bounds.right - CLAMP_MARGIN) dx += bounds.right - CLAMP_MARGIN - b.right;
+          b = panelBox(a.x, a.y, w, h, hSide, vSide, dx, dy);
+          if (b.top < bounds.top + CLAMP_MARGIN) dy += bounds.top + CLAMP_MARGIN - b.top;
+          else if (b.bottom > bounds.bottom - CLAMP_MARGIN) dy += bounds.bottom - CLAMP_MARGIN - b.bottom;
+        };
+        clampToBounds();
+
+        // Every overlapping rect is resolved TOGETHER, in one weighted
+        // objective, rather than in two separate stages (siblings first,
+        // hard rects after) — two stages meant whichever ran second could
+        // silently re-break what the first one just fixed, since neither
+        // stage could see the other's constraints while it worked. Overlap
+        // with a hard rect (the active node's own badge, the center node)
+        // counts HARD_WEIGHT times more than the same area of overlap with a
+        // soft one (a sibling badge, the chain, a hero content block) — so
+        // the search always prefers clearing a hard rect over a soft one,
+        // but among moves that are equal on that front it still prefers
+        // clearing more soft-rect area, and — critically — never takes a
+        // move that clears a soft rect at the cost of RE-overlapping a hard
+        // one, since that would raise the weighted total it's minimizing.
+        // Each round finds the single cheapest-to-reach, most-improving push
+        // (from any edge of any rect the panel currently overlaps, clamped
+        // to bounds) and takes it if it actually reduces the weighted total;
+        // repeated since one improving move can open up another.
+        const HARD_WEIGHT = 1000;
+        const weightedOverlap = (bx) =>
+          avoidRects.reduce((total, r) => {
+            const ox = Math.min(bx.right, r.right) - Math.max(bx.left, r.left);
+            const oy = Math.min(bx.bottom, r.bottom) - Math.max(bx.top, r.top);
+            if (ox <= 0 || oy <= 0) return total;
+            const area = ox * oy;
+            return total + (hardRects.includes(r) ? area * HARD_WEIGHT : area);
+          }, 0);
+        const clamp = (v, lo, hi) => Math.min(Math.max(v, lo), hi);
+        // A pure area-minimizing search has no notion of "too far" — clearing
+        // the last sliver of a hard rect's overlap is worth so much (HARD_
+        // WEIGHT) that the search will happily take a 150px+ detour for it,
+        // one small improving step at a time, ending up exactly as
+        // disconnected from the node as the original viewport-bounds bug
+        // this whole positioning system was built to fix. TRAVEL_BUDGET caps
+        // total displacement from the natural NODE_GAP anchor — once a move
+        // would exceed it, that option is off the table (even if it's the
+        // only one still reducing overlap), so the search settles for the
+        // closest state it already reached rather than wandering for a
+        // marginally cleaner one.
+        const TRAVEL_BUDGET = 120;
+
+        for (let round = 0; round < 10; round++) {
+          const b = panelBox(a.x, a.y, w, h, hSide, vSide, dx, dy);
+          const current = weightedOverlap(b);
+          if (current === 0) break;
+
+          let bestOpt = null;
+          let bestScore = current;
+          for (const r of avoidRects) {
+            const overlapX = Math.min(b.right, r.right) - Math.max(b.left, r.left);
+            const overlapY = Math.min(b.bottom, r.bottom) - Math.max(b.top, r.top);
+            if (overlapX <= 0 || overlapY <= 0) continue;
+
+            const options = [
+              { axis: "x", delta: clamp(r.right + AVOID_MARGIN - b.left, -Infinity, bounds.right - CLAMP_MARGIN - b.right) },
+              { axis: "x", delta: clamp(r.left - AVOID_MARGIN - b.right, bounds.left + CLAMP_MARGIN - b.left, Infinity) },
+              { axis: "y", delta: clamp(r.bottom + AVOID_MARGIN - b.top, -Infinity, bounds.bottom - CLAMP_MARGIN - b.bottom) },
+              { axis: "y", delta: clamp(r.top - AVOID_MARGIN - b.bottom, bounds.top + CLAMP_MARGIN - b.top, Infinity) },
+            ];
+            for (const opt of options) {
+              if (opt.delta === 0) continue;
+              const nDx = opt.axis === "x" ? dx + opt.delta : dx;
+              const nDy = opt.axis === "y" ? dy + opt.delta : dy;
+              if (Math.abs(nDx) + Math.abs(nDy) > TRAVEL_BUDGET) continue;
+              const nb = opt.axis === "x" ? panelBox(a.x, a.y, w, h, hSide, vSide, nDx, dy) : panelBox(a.x, a.y, w, h, hSide, vSide, dx, nDy);
+              const score = weightedOverlap(nb);
+              if (score < bestScore) {
+                bestScore = score;
+                bestOpt = opt;
+              }
+            }
+          }
+          if (!bestOpt) break;
+          if (bestOpt.axis === "x") dx += bestOpt.delta;
+          else dy += bestOpt.delta;
+          clampToBounds();
+        }
+
+        const finalBox = panelBox(a.x, a.y, w, h, hSide, vSide, dx, dy);
+        const overlapArea = (r) => {
+          const ox = Math.min(finalBox.right, r.right) - Math.max(finalBox.left, r.left);
+          const oy = Math.min(finalBox.bottom, r.bottom) - Math.max(finalBox.top, r.top);
+          return ox > 0 && oy > 0 ? ox * oy : 0;
+        };
+        const overlaps = (r) => overlapArea(r) > 0;
+        const overlapCount = avoidRects.reduce((n, r) => (overlaps(r) ? n + 1 : n), 0);
+        // Whether THIS specific candidate still overlaps either hard rect
+        // (the active node's own badge, or the center node) after nudging —
+        // tracked separately from the general overlapCount below because
+        // it's weighted very differently: a candidate that dodges both but
+        // grazes a sibling badge instead is preferred over one that's
+        // technically "cleaner" overall but lands back on the node or center.
+        // hardOverlapArea is the finer-grained version of the same idea, used
+        // to break ties BETWEEN candidates that all still overlap a hard rect
+        // (a genuinely too-small container) — smallest remaining intrusion
+        // wins, rather than falling through to cost, which has no idea how
+        // deep the overlap actually is.
+        const hardOverlap = hardRects.some(overlaps);
+        const hardOverlapArea = hardRects.reduce((n, r) => n + overlapArea(r), 0);
+
+        return { hSide, vSide, dx, dy, overlapCount, hardOverlap, hardOverlapArea, cost: Math.abs(dx) + Math.abs(dy) };
+      };
+
+      // Every placement (four diagonals + four compass points) is a
+      // geometrically valid place to anchor the panel — which one actually
+      // avoids overlapping real content depends on what's around the node on
+      // screen, not on the concept's angle alone. So every placement is
+      // resolved and scored, and the cleanest one wins; the tangent-blended
+      // diagonal only orders the search so the "natural" placement is tried
+      // first when more than one is clean. Not overlapping the active node's
+      // own badge OR the center node is a harder requirement than not
+      // overlapping a sibling's — sorted first, ahead of overlapCount, so a
+      // candidate that keeps clear of both but grazes a neighbor always beats
+      // one that's overall "cleaner" but sits back on top of either. When
+      // EVERY candidate still overlaps a hard rect (a container too small to
+      // fully clear both at once, at any angle), hardOverlapArea breaks the
+      // tie by how deep the remaining intrusion is — cost alone doesn't know
+      // that, and would just as happily pick a candidate that shifted a
+      // little and still buried the badge as one that shifted a little more
+      // and left only a sliver overlapping.
+      const preferred = preferredDiagonal(containerRect, nodeRect);
+      const results = placementSearchOrder(preferred).map(({ hSide, vSide }) => resolveQuadrant(hSide, vSide));
+      results.sort(
+        (p, q) =>
+          (p.hardOverlap === q.hardOverlap ? 0 : p.hardOverlap ? 1 : -1) ||
+          p.hardOverlapArea - q.hardOverlapArea ||
+          p.overlapCount - q.overlapCount ||
+          p.cost - q.cost
+      );
+      const best = results[0];
+      const anchor = sideAnchor(nodeRect, best.hSide, best.vSide);
+
+      setPos((prev) => {
+        const next = {
+          left: anchor.x - containerRect.left,
+          top: anchor.y - containerRect.top,
+          hSide: best.hSide,
+          vSide: best.vSide,
+          dx: best.dx,
+          dy: best.dy,
+        };
+        return prev.left === next.left && prev.top === next.top && prev.hSide === next.hSide && prev.vSide === next.vSide && prev.dx === next.dx && prev.dy === next.dy
+          ? prev
+          : next;
+      });
+    };
+
+    recompute();
+    window.addEventListener("resize", recompute);
+    window.addEventListener("orientationchange", recompute);
+    return () => {
+      window.removeEventListener("resize", recompute);
+      window.removeEventListener("orientationchange", recompute);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [concept]);
 
   if (!concept) return null;
-  const anchor = panelAnchor(cfg, concept.angle);
   return (
     <motion.div
       ref={panelRef}
@@ -246,24 +441,24 @@ const ChainDetail = ({ concept, reduce, cfg }) => {
       data-testid="concept-graph-chain-detail"
       className="absolute pointer-events-none z-10 rounded-md"
       style={{
-        left: `${(anchor.x / cfg.w) * 100}%`,
-        top: `${(anchor.y / cfg.h) * 100}%`,
+        left: `${pos.left}px`,
+        top: `${pos.top}px`,
         width: `${PANEL_MAX_W}px`,
         padding: "8px 10px",
-        margin: "-8px -10px",
-        // The tangential anchor offset above keeps the panel off the active
-        // chain's ray for most angles/widths, but a few combinations still
-        // can't fully clear it: a couple of angles land the box close enough
-        // that its far edge grazes the chain's line, and at narrower
-        // viewports the edge-clamp (below) can pull an already-tight panel
-        // back toward the node to stay on-screen, re-crossing the ray it was
-        // offset from. This backdrop is the fallback for exactly those
-        // unavoidable cases — a line crossing behind the panel reads as
-        // passing behind a card, not through the letters.
+        // No compensating negative margin here (an earlier version had one,
+        // to expand the backdrop without moving the percentage-based anchor
+        // it used to be positioned by) — every position/overlap computation
+        // above is measured off this element's real getBoundingClientRect(),
+        // so left/top now have to be exactly where that measurement expects
+        // them, with nothing shifting the rendered box away from them.
+        // A subtle backdrop card, always present — the fallback for the rare
+        // angle/width combinations where the repositioning above still can't
+        // fully clear the active chain's own line: a line crossing behind the
+        // panel reads as passing behind a card, not through the letters.
         background: "rgba(10,10,10,0.6)",
         backdropFilter: "blur(6px)",
         WebkitBackdropFilter: "blur(6px)",
-        transform: `translate(${H_TRANSFORM[anchor.hSide]}, ${V_TRANSFORM[anchor.vSide]}) translate(${clamp.dx}px, ${clamp.dy}px)`,
+        transform: `translate(${H_TRANSFORM[pos.hSide]}, ${V_TRANSFORM[pos.vSide]}) translate(${pos.dx}px, ${pos.dy}px)`,
       }}
       initial={reduce ? false : { opacity: 0 }}
       animate={{ opacity: 1 }}
@@ -301,6 +496,7 @@ export default function ConceptGraph({ className = "" }) {
   const canHover = useMediaQuery(HOVER_QUERY);
   const isMobile = useMediaQuery(MOBILE_QUERY);
   const [activeId, setActiveId] = useState(null);
+  const containerRef = useRef(null);
 
   const cfg = isMobile ? MOBILE : DESKTOP;
   const centerPos = { x: cfg.w / 2, y: cfg.h / 2 };
@@ -322,6 +518,7 @@ export default function ConceptGraph({ className = "" }) {
 
   return (
     <div
+      ref={containerRef}
       className={`relative w-full select-none ${className}`}
       style={{ aspectRatio: `${cfg.w} / ${cfg.h}` }}
       onClick={() => {
@@ -419,7 +616,16 @@ export default function ConceptGraph({ className = "" }) {
           )}
         </AnimatePresence>
 
-        <circle cx={centerPos.x} cy={centerPos.y} r={CENTER_R} fill={ACCENT} stroke={NODE_REST_STROKE} strokeWidth="1.5" aria-hidden="true" />
+        <circle
+          data-testid="concept-graph-center-node"
+          cx={centerPos.x}
+          cy={centerPos.y}
+          r={CENTER_R}
+          fill={ACCENT}
+          stroke={NODE_REST_STROKE}
+          strokeWidth="1.5"
+          aria-hidden="true"
+        />
       </svg>
 
       {/* Icon badges layered over the SVG canvas, positioned with the same
@@ -517,7 +723,7 @@ export default function ConceptGraph({ className = "" }) {
       </div>
 
       <AnimatePresence>
-        {activeConcept && <ChainDetail key={activeConcept.id} concept={activeConcept} reduce={reduce} cfg={cfg} />}
+        {activeConcept && <ChainDetail key={activeConcept.id} concept={activeConcept} reduce={reduce} containerRef={containerRef} />}
       </AnimatePresence>
     </div>
   );
