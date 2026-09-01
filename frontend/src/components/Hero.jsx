@@ -124,6 +124,8 @@ export default function Hero() {
         width >= 1152px (half the container overhang, minus its own padding).
         Shifting by half this box's width minus half the button's width
         (~42px) centers the box under the button instead of flushing an edge.
+        This box is 896px (cfg.w in ConceptGraph — see DESKTOP there), so the
+        offset is 552 + (896 - 84) / 2 = 958px.
 
         z-20: the text column's wrapper div above is `relative z-10`, and its
         box spans the full container width even though its own text doesn't —
@@ -131,7 +133,7 @@ export default function Hero() {
         over most of the graph's area (confirmed via elementFromPoint) and
         silently swallows every hover/click before it reaches the SVG.
       */}
-      <div className="absolute right-[calc(50vw_-_830px)] top-1/2 -translate-y-1/2 hidden lg:block w-[640px] z-20">
+      <div className="absolute right-[calc(50vw_-_958px)] top-1/2 -translate-y-1/2 hidden lg:block w-[896px] z-20">
         <ConceptGraph />
       </div>
     </section>
