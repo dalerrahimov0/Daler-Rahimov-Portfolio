@@ -24,7 +24,14 @@ const CONCEPT_ICONS = {
 };
 
 const HOVER_QUERY = "(hover: hover)";
-const MOBILE_QUERY = "(max-width: 639px)";
+// Matches the lg breakpoint that now actually decides where this component
+// renders: Hero's overlay only ever mounts it at >=1024px (DESKTOP applies
+// there), ConceptGraphSection only ever mounts it below that (MOBILE should
+// apply for that whole range). A narrower phone-only threshold here left a
+// gap — a 640-1023px viewport (a tablet, or a narrow desktop window) landed
+// in ConceptGraphSection but still got DESKTOP's geometry, whose hit targets
+// are sized for a mouse pointer, not a touchscreen.
+const MOBILE_QUERY = "(max-width: 1023px)";
 
 // Both layouts are true circles — only the size changes. `badge`/`hit` are the
 // HTML icon-badge's visual diameter and its (larger, invisible) hit target,
@@ -37,7 +44,20 @@ const MOBILE_QUERY = "(max-width: 639px)";
 // "above the node" collides with its neighbors regardless of how the ring is
 // tuned. A fixed detail panel next to the graph has no such limit.
 const DESKTOP = { w: 896, h: 896, rx: 154, ry: 154, sx: 56, sy: 56, badge: 48, hit: 62 };
-const MOBILE = { w: 320, h: 420, rx: 54, ry: 60, sx: 20, sy: 24, badge: 22, hit: 32 };
+// Square, like DESKTOP — this was previously portrait (320x420), but that
+// shape was never actually exercised: this cfg branch only renders inside
+// ConceptGraphSection now, and that section's container is capped at 480px
+// regardless of aspect. hit/w is deliberately much higher than DESKTOP's
+// (62/896 = 7%): DESKTOP only ever needs to clear a mouse pointer, but this
+// renders into a ~270-480px container on real touch devices, where a 7%
+// hit target would be a ~20-34px tap zone — well under the ~44px touch
+// target guidelines. rx grew to match (88/340 vs DESKTOP's 154/896 = 17%)
+// so the 7 nodes' now-larger hit circles still clear their neighbors — a
+// wider hit fraction without more ring radius just makes adjacent nodes'
+// tap zones overlap. sx shrank proportionally so the widest hover chain
+// (4 links) still lands inside the viewBox with margin to spare, the same
+// way DESKTOP's rx/sx ratio does.
+const MOBILE = { w: 340, h: 340, rx: 88, ry: 88, sx: 14, sy: 14, badge: 46, hit: 61 };
 
 const CHAIN_NODE_R = 5;
 const CENTER_R = 10;
@@ -124,9 +144,38 @@ const ChainDetail = ({ concept, reduce, cfg }) => {
   useLayoutEffect(() => {
     if (!concept || !panelRef.current) return;
     const rect = panelRef.current.getBoundingClientRect();
+    // Only the Hero overlay usage has a "hero-section" ancestor to clip
+    // against (it has its own overflow-hidden); the standalone mobile
+    // section (ConceptGraphSection) doesn't, so clipEl is null there and
+    // this falls back to the viewport itself. That fallback has to be
+    // visualViewport, not window.innerHeight: on a real touch device the
+    // two diverge whenever something shifts the on-screen keyboard or the
+    // browser's dynamic toolbar — visualViewport tracks what's actually
+    // visible, innerHeight doesn't — and this effect runs right as a tap
+    // focuses the node, exactly the moment that can happen.
     const clipEl = panelRef.current.closest('[data-testid="hero-section"]');
-    const clipRect = clipEl ? clipEl.getBoundingClientRect() : { top: 0, bottom: window.innerHeight };
+    const viewportHeight = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+    const clipRect = clipEl ? clipEl.getBoundingClientRect() : { top: 0, bottom: viewportHeight };
     const vw = document.documentElement.clientWidth;
+
+    // The graph's container is now fluid (see Hero.jsx), so at the narrow
+    // end of that range the node ring — and this panel, anchored close to
+    // it — sits much nearer the hero's text column than it did at the old
+    // fixed size. The viewport-edge clamp below has no idea that column is
+    // there, so a panel on the left side of the ring could clear the
+    // viewport's own edge while still landing on top of the hero text.
+    // "hero-text-column" scopes the search to that column (excluding this
+    // graph, its sibling) rather than the whole hero section; within it,
+    // elements with a real max-width are the ones deliberately kept
+    // narrower than the container — the actual content edge, not the
+    // full-width box a block element reports by default.
+    const textColumn = clipEl && clipEl.querySelector('[data-testid="hero-text-column"]');
+    let textColumnRight = null;
+    if (textColumn) {
+      const capped = [...textColumn.querySelectorAll("*")].filter((el) => getComputedStyle(el).maxWidth !== "none");
+      if (capped.length) textColumnRight = Math.max(...capped.map((el) => el.getBoundingClientRect().right));
+    }
+    const minLeft = textColumnRight != null ? Math.max(CLAMP_MARGIN, textColumnRight + CLAMP_MARGIN) : CLAMP_MARGIN;
 
     let dx = 0;
     let dy = 0;
@@ -135,7 +184,7 @@ const ChainDetail = ({ concept, reduce, cfg }) => {
       const right = rect.right + dx;
       const top = rect.top + dy;
       const bottom = rect.bottom + dy;
-      if (left < CLAMP_MARGIN) dx += CLAMP_MARGIN - left;
+      if (left < minLeft) dx += minLeft - left;
       else if (right > vw - CLAMP_MARGIN) dx += vw - CLAMP_MARGIN - right;
       if (top < clipRect.top + CLAMP_MARGIN) dy += clipRect.top + CLAMP_MARGIN - top;
       else if (bottom > clipRect.bottom - CLAMP_MARGIN) dy += clipRect.bottom - CLAMP_MARGIN - bottom;
@@ -407,16 +456,32 @@ export default function ConceptGraph({ className = "" }) {
               style={{
                 left: `${(pos.x / cfg.w) * 100}%`,
                 top: `${(pos.y / cfg.h) * 100}%`,
-                width: `${cfg.hit}px`,
-                height: `${cfg.hit}px`,
+                // Percentage of the graph container, not a fixed px size — the
+                // container's own width is now fluid (see Hero.jsx), and a
+                // fixed-px hit target would stay full-size while everything
+                // else shrank around it, ending up oversized/overlapping
+                // neighbors at small container widths.
+                width: `${(cfg.hit / cfg.w) * 100}%`,
+                height: `${(cfg.hit / cfg.h) * 100}%`,
                 transform: "translate(-50%, -50%)",
                 cursor: "pointer",
                 outline: "none",
               }}
               onMouseEnter={() => canHover && open(c.id)}
               onMouseLeave={() => canHover && close()}
-              onFocus={() => open(c.id)}
-              onBlur={() => close()}
+              // Tapping a focusable element focuses it before the click
+              // fires — on a hover-capable device that's harmless (this just
+              // mirrors the hover-preview above, and toggle() is skipped
+              // entirely there, see onClick), but on a touch device with no
+              // hover it was a real bug: unconditional open() here ran on
+              // every tap, immediately before onClick's toggle() saw the node
+              // already active and flipped it straight back closed — so taps
+              // silently did nothing. Gating both by canHover leaves keyboard
+              // activation (handleKeyDown, unconditional below) as the one
+              // path that opens a node on non-hover devices, with taps
+              // handled by onClick's toggle() alone.
+              onFocus={() => canHover && open(c.id)}
+              onBlur={() => canHover && close()}
               onClick={(e) => {
                 e.stopPropagation();
                 if (!canHover) toggle(c.id);
@@ -426,15 +491,25 @@ export default function ConceptGraph({ className = "" }) {
               <div
                 className="flex items-center justify-center rounded-full"
                 style={{
-                  width: `${cfg.badge}px`,
-                  height: `${cfg.badge}px`,
+                  // Percentage of THIS div's own parent (the hit target above,
+                  // sized cfg.hit) rather than of cfg.w — that keeps the
+                  // badge:hit ratio correct regardless of the hit target's
+                  // own (already-percentage) size, instead of compounding two
+                  // container-relative percentages into a value scaled by
+                  // cfg.w twice over.
+                  width: `${(cfg.badge / cfg.hit) * 100}%`,
+                  height: `${(cfg.badge / cfg.hit) * 100}%`,
                   background: BADGE_BG,
                   border: `1.5px solid ${borderColor}`,
                   boxShadow: glow,
                   transition: reduce ? "none" : "border-color 0.4s ease, box-shadow 0.4s ease",
                 }}
               >
-                <Icon size={Math.round(cfg.badge * 0.47)} color={iconColor} strokeWidth={2} style={{ transition: reduce ? "none" : "color 0.4s ease" }} />
+                <Icon
+                  color={iconColor}
+                  strokeWidth={2}
+                  style={{ width: "47%", height: "47%", transition: reduce ? "none" : "color 0.4s ease" }}
+                />
               </div>
             </div>
           );

@@ -4,6 +4,7 @@ import "@/App.css";
 import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
 import MetricsStrip from "@/components/MetricsStrip";
+import ConceptGraphSection from "@/components/ConceptGraphSection";
 import About from "@/components/About";
 import Projects from "@/components/Projects";
 import Experience from "@/components/Experience";
@@ -36,6 +37,7 @@ function App() {
       <main>
         <Hero />
         <MetricsStrip />
+        <ConceptGraphSection />
         <About />
         <Experience />
         <Projects />
