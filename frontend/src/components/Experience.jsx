@@ -46,7 +46,7 @@ const FeaturedRole = ({ e, delay }) => (
       </div>
 
       <div className="border-l-2 border-[#5e6ad2]/40 bg-[#5e6ad2]/5 px-5 py-4 mb-8">
-        <p className="text-sm font-medium text-zinc-200 tracking-wide">Current Focus: {e.focus}</p>
+        <p className="text-sm font-medium text-zinc-200 tracking-wide">{e.current ? "Current Focus" : "Focus"}: {e.focus}</p>
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1.1fr)_minmax(260px,0.9fr)] gap-10">

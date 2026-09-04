@@ -64,6 +64,14 @@ const CENTER_R = 10;
 
 const toRad = (deg) => (deg * Math.PI) / 180;
 
+// Flattens either concept shape into the ordered list of outward chain-node
+// labels: peers are already flat equals, while primary/details is the one
+// "main thing" followed by its supporting details, in order. Used only for
+// the SVG dot-chain (which draws N nodes stepping outward regardless of
+// shape) — ChainDetail below renders the two shapes with different
+// typography instead of flattening them.
+const chainLabels = (concept) => (concept.peers ? concept.peers : [concept.primary, ...concept.details]);
+
 // i = 0 is the concept node itself (sitting on the base rx/ry ring); i = 1..n
 // are successive chain links, each stepping outward by sx/sy along the same angle.
 const ringPos = (cfg, angleDeg, i) => {
@@ -469,18 +477,51 @@ const ChainDetail = ({ concept, reduce, containerRef }) => {
         {concept.label}
       </p>
       <div className="mt-2 space-y-1">
-        {concept.chain.map((link, i) => (
-          <motion.p
-            key={link.label}
-            data-testid={`concept-graph-chain-label-${i}`}
-            className="text-zinc-400 text-sm leading-snug"
-            initial={reduce ? false : { opacity: 0, x: -4 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: reduce ? 0 : 0.3, delay: reduce ? 0 : 0.08 * (i + 1), ease: [0.22, 1, 0.36, 1] }}
-          >
-            {link.label}
-          </motion.p>
-        ))}
+        {concept.peers ? (
+          // Peers (architecture only): genuinely equal items sharing the
+          // concept as a common thread — same weight/size for all, nothing
+          // visually promoted.
+          concept.peers.map((label, i) => (
+            <motion.p
+              key={label}
+              data-testid={`concept-graph-chain-label-${i}`}
+              className="text-zinc-400 text-sm leading-snug"
+              initial={reduce ? false : { opacity: 0, x: -4 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: reduce ? 0 : 0.3, delay: reduce ? 0 : 0.08 * (i + 1), ease: [0.22, 1, 0.36, 1] }}
+            >
+              {label}
+            </motion.p>
+          ))
+        ) : (
+          // Primary + details: one main thing, then smaller/lighter,
+          // indented supporting facts about that one thing.
+          <>
+            <motion.p
+              data-testid="concept-graph-chain-label-0"
+              className="text-zinc-200 text-base font-semibold leading-snug"
+              initial={reduce ? false : { opacity: 0, x: -4 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: reduce ? 0 : 0.3, delay: reduce ? 0 : 0.08 * 1, ease: [0.22, 1, 0.36, 1] }}
+            >
+              {concept.primary}
+            </motion.p>
+            <div className="pl-3 space-y-1 mt-1">
+              {concept.details.map((label, i) => (
+                <motion.p
+                  key={label}
+                  data-testid={`concept-graph-chain-label-${i + 1}`}
+                  className="text-zinc-500 text-xs font-normal leading-snug"
+                  initial={reduce ? false : { opacity: 0, x: -4 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: reduce ? 0 : 0.3, delay: reduce ? 0 : 0.08 * (i + 2), ease: [0.22, 1, 0.36, 1] }}
+                >
+                  {label}
+                </motion.p>
+              ))}
+            </div>
+          </>
+        )}
       </div>
     </motion.div>
   );
@@ -580,7 +621,7 @@ export default function ConceptGraph({ className = "" }) {
         <AnimatePresence>
           {activeConcept && (
             <g key={`chain-${activeConcept.id}`} data-testid="concept-graph-chain-nodes">
-              {activeConcept.chain.map((link, i) => {
+              {chainLabels(activeConcept).map((label, i) => {
                 const from = ringPos(cfg, activeConcept.angle, i);
                 const to = ringPos(cfg, activeConcept.angle, i + 1);
                 return (
