@@ -1,6 +1,6 @@
 import { Reveal, Overline } from "@/components/Reveal";
 import { TIMELINE } from "@/lib/data";
-import { Flag, BookOpen, Users, Shield, Globe, GraduationCap, Bot, Brain, Building2, Zap } from "lucide-react";
+import { Flag, BookOpen, Users, Shield, Globe, GraduationCap, Bot, Brain, Building2, Zap, Database } from "lucide-react";
 
 const ICONS = {
   flag: Flag,
@@ -13,6 +13,7 @@ const ICONS = {
   brain: Brain,
   building: Building2,
   zap: Zap,
+  database: Database,
 };
 
 const TimelineItem = ({ item, index }) => {

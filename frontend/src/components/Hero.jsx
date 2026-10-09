@@ -59,8 +59,8 @@ export default function Hero() {
             className="mt-8 max-w-xl text-sm sm:text-base text-zinc-500 leading-relaxed"
             data-testid="hero-tagline"
           >
-            Building AI systems, data platforms, and production software that connect
-            strategy, data, and execution.
+            Building production AI systems, Microsoft Fabric data architecture, and
+            full-stack products — from a production startup to enterprise AI adoption at UNK.
           </motion.p>
         </div>
         <motion.div

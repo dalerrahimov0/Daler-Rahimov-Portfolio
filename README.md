@@ -8,7 +8,7 @@ A modern engineering portfolio showcasing enterprise AI, data architecture, AI s
 
 ## Live Website
 
-🌐 **Portfolio:** *(Coming Soon)*
+🌐 **Portfolio:** [daler-rahimov-portfolio.vercel.app](https://daler-rahimov-portfolio.vercel.app)
 
 ---
 
@@ -16,12 +16,13 @@ A modern engineering portfolio showcasing enterprise AI, data architecture, AI s
 
 ## TajKhona
 
-A production multilingual PropTech platform modernizing apartment rentals in Dushanbe, Tajikistan.
+A production multilingual PropTech marketplace modernizing apartment rentals in Tajikistan — [tajkhona.com](https://tajkhona.com).
 
 Highlights
 
-- Production startup
-- AI-assisted workflows
+- Production startup — 470+ monthly active users across 8+ countries
+- Growth driven primarily through organic search, with referral traffic from AI assistants including ChatGPT
+- AI-assisted discovery
 - Interactive maps
 - Verified listings
 - Multilingual (EN / RU / TJ)
@@ -46,13 +47,12 @@ Supported by an ongoing writing series documenting its evolution.
 
 ## Enterprise AI
 
-Supporting enterprise-wide AI adoption through:
+Leading enterprise AI adoption at the University of Nebraska at Kearney:
 
-- ChatGPT Enterprise
-- Custom GPTs
-- AI governance
-- Institutional reporting
-- AI literacy
+- ChatGPT Edu rollout supporting 250+ users
+- 10+ custom GPTs deployed across 10+ classrooms
+- Power BI dashboards for institutional reporting
+- AI training workshops for faculty and staff
 
 ---
 
@@ -66,7 +66,7 @@ Highlights include:
 - ETL Pipelines
 - Power BI
 - Microsoft Fabric
-- Library Space Analytics
+- Library space analytics (2,484 observations)
 
 ---
 
@@ -82,7 +82,7 @@ Highlights include:
 ## AI & Analytics
 
 - OpenAI API
-- ChatGPT Enterprise
+- ChatGPT Edu
 - Microsoft Fabric
 - Power BI
 - Power Query
