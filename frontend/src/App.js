@@ -37,10 +37,10 @@ function App() {
       <main>
         <Hero />
         <MetricsStrip />
-        <ConceptGraphSection />
-        <About />
-        <Experience />
         <Projects />
+        <Experience />
+        <About />
+        <ConceptGraphSection />
         <Tools />
         <Timeline />
         <Writing />

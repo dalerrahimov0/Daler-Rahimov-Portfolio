@@ -1,6 +1,6 @@
 # Daler Rahimov Portfolio
 
-A modern engineering portfolio showcasing enterprise AI, data architecture, AI systems, and product engineering through real-world case studies.
+Building production AI systems, data platforms, and full-stack products — from enterprise AI adoption to a multilingual startup with real users.
 
 > This portfolio is designed as a collection of engineering case studies rather than traditional project cards. Each project explains the problem, architecture, engineering decisions, and outcomes behind the work.
 
@@ -16,11 +16,11 @@ A modern engineering portfolio showcasing enterprise AI, data architecture, AI s
 
 ## TajKhona
 
-A production multilingual PropTech marketplace modernizing apartment rentals in Tajikistan — [tajkhona.com](https://tajkhona.com).
+A production multilingual PropTech marketplace built to modernize apartment rentals in Tajikistan — [tajkhona.com](https://tajkhona.com).
 
 Highlights
 
-- Production startup — 470+ monthly active users across 8+ countries
+- Production startup — 470+ monthly active users across 8+ countries (30-day reporting snapshot)
 - Growth driven primarily through organic search, with referral traffic from AI assistants including ChatGPT
 - AI-assisted discovery
 - Interactive maps
@@ -47,18 +47,18 @@ Supported by an ongoing writing series documenting its evolution.
 
 ## Enterprise AI
 
-Leading enterprise AI adoption at the University of Nebraska at Kearney:
+Supporting campuswide enterprise AI adoption at the University of Nebraska at Kearney:
 
-- ChatGPT Edu rollout supporting 250+ users
-- 10+ custom GPTs deployed across 10+ classrooms
-- Power BI dashboards for institutional reporting
+- Led the ChatGPT Edu rollout supporting 250+ users
+- 10+ custom GPTs supporting teaching and learning across 10+ classrooms
+- Power BI reporting to support institutional planning and decision-making
 - AI training workshops for faculty and staff
 
 ---
 
 ## Library Analytics
 
-Designed Microsoft Fabric and Power BI analytics architecture supporting institutional decision-making.
+Designed and implemented a Microsoft Fabric and Power BI analytics architecture to support data-informed facility planning.
 
 Highlights include:
 

@@ -6,35 +6,20 @@ export const CONTACT = {
   resume: "/resume/Daler-Rahimov-Resume.pdf",
 };
 
-export const HERO_INFO = [
-  { label: "Education", value: "MBA Candidate", org: "University of Nebraska at Kearney" },
-  { label: "Current Role", value: "Graduate Assistant, Enterprise AI", org: "Office of Academic Innovation, UNK" },
-  { label: "Founder", value: "TajKhona", org: "470+ monthly active users" },
-];
-
-export const ACTIVE_SYSTEMS = ["TajKhona", "Enterprise AI", "UNK AI Chatbot", "Personal AI (PAI)"];
-
 export const STATUS_LINE = [
-  "Founder @ TajKhona",
-  "Enterprise AI @ UNK",
-  "MBA Candidate",
+  "Founder, TajKhona",
+  "Graduate Assistant, Enterprise AI — UNK",
+  "MBA Candidate, UNK",
   "Former IFC (World Bank Group)",
 ];
 
 export const METRICS = [
-  "470+ monthly active users — TajKhona",
-  "Users across 8+ countries",
-  "Growth driven primarily through organic search",
-  "250+ enterprise AI users",
-  "10+ custom GPTs across 10+ classrooms",
-  "2,484 library observations analyzed",
-  "Production startup — EN / RU / TJ",
-  "Microsoft Fabric architecture",
-  "Semantic models",
-  "ETL pipelines",
-  "Power BI dashboards",
-  "RAG chatbot live on UNK's website",
-  "Personal AI Architecture",
+  "470+ Monthly Active Users",
+  "8+ Countries Reached",
+  "250+ Enterprise AI Users",
+  "10+ Custom GPTs",
+  "10+ Classrooms",
+  "2,484 Library Observations Analyzed",
 ];
 
 export const TOOLS_SUBTITLE =
@@ -72,7 +57,7 @@ export const PROJECTS = [
     id: "tajkhona",
     index: "01",
     name: "TajKhona",
-    tagline: "A production multilingual rental marketplace serving 470+ monthly active users across 8+ countries.",
+    tagline: "A production multilingual marketplace in English, Russian, and Tajik — 470+ monthly active users across 8+ countries (30-day reporting snapshot), growing primarily through organic search, with referral traffic from AI assistants including ChatGPT.",
     kind: "Production Startup",
     accent: "gold",
     image: "/images/tajkhona/tajkhona-homepage.png",
@@ -91,13 +76,13 @@ export const PROJECTS = [
       "Subscription Plans", "SEO Optimized", "Mobile First",
     ],
     outcome: [
-      "470+ monthly active users across 8+ countries in the last 30 days — real users, not a portfolio demo",
+      "470+ monthly active users across 8+ countries over a 30-day reporting period — real users, not a portfolio demo",
       "Growth driven primarily through organic search, with referral traffic from AI assistants including ChatGPT",
       "Live in production at tajkhona.com in English, Russian, and Tajik",
       "Admin-moderated listings and subscription billing running the business day to day",
     ],
     lesson: "Shipping TajKhona surfaced how much of a marketplace product is really about trust — verified listings, direct communication, and multilingual clarity mattered more to early users than any single feature.",
-    positioning: "Unlike a traditional portfolio project, TajKhona is a production startup with real users across 8+ countries, modernizing Tajikistan's rental ecosystem through AI, multilingual accessibility, trust-focused UX, and marketplace technology.",
+    positioning: "Unlike a traditional portfolio project, TajKhona is a production startup with real users across 8+ countries, built to modernize Tajikistan's rental ecosystem through AI, multilingual accessibility, trust-focused UX, and marketplace technology.",
   },
   {
     id: "pai",
@@ -126,7 +111,7 @@ export const PROJECTS = [
     outcome: [
       "A published four-part series documenting the architecture as it's built",
       "A working reference implementation (Hodor) used daily for engineering, research, and decision support",
-      "A framework that survives model changes because it's defined in concepts, not code",
+      "A framework designed to survive model changes because it's defined in concepts, not code",
     ],
     lesson: "Building PAI in public reinforced a simple idea: most “AI problems” are actually continuity problems. Once memory, skills, and agents are structured correctly, the model's raw intelligence stops being the bottleneck.",
   },
@@ -155,7 +140,7 @@ export const PROJECTS = [
       "Deployed on UNK's website for real-time academic and administrative Q&A",
       "Real-time handoff from AI to a human staff member when the AI can't help",
       "One document-grounded entry point to campus information spread across many departments",
-      "A reusable RAG pattern for other university services",
+      "A RAG pattern designed to be reusable for other university services",
     ],
     lesson: "The hardest part wasn't generating answers — it was knowing when to hand off to a human, which shaped the real-time chat handoff design.",
   },
@@ -163,7 +148,7 @@ export const PROJECTS = [
     id: "medical-billing",
     index: "04",
     name: "Medical Billing Predictor",
-    tagline: "Predictive analytics model for healthcare billing risk.",
+    tagline: "A probability model quantifying how healthcare billing error risk compounds across repeated procedures.",
     kind: "Analytics Project",
     image: "/images/medical-billing/medbilling-binomial.png",
     gallery: [
@@ -195,13 +180,13 @@ export const EXPERIENCE_FEATURED = [
     orgTag: "University of Nebraska Kearney",
     period: "Aug 2025 — Present",
     focus: "Enterprise AI Implementation, Custom GPT Development & Power BI Reporting",
-    overview: "I lead enterprise AI implementation in the Office of Academic Innovation — rolling out ChatGPT Edu to 250+ users, deploying custom GPTs into 10+ classrooms, and building the Power BI reporting that informs leadership planning at the University of Nebraska at Kearney.",
+    overview: "Supporting campuswide enterprise AI adoption at the University of Nebraska at Kearney — leading the ChatGPT Edu rollout to 250+ users, developing custom GPTs that support teaching and learning in 10+ classrooms, and building Power BI reporting for leadership planning.",
     evidence: ["250+ enterprise AI users", "10+ custom GPTs deployed", "10+ classrooms"],
     points: [
-      "Led the enterprise ChatGPT Edu rollout to 250+ users — owning licensing, onboarding, and faculty/student enablement campuswide.",
-      "Built and deployed 10+ custom GPTs across 10+ classrooms, embedding AI into academic and administrative workflows.",
-      "Designed Power BI dashboards for institutional reporting and leadership planning.",
-      "Developed AI training workshops for faculty and staff, improving digital literacy and workflow integration across departments.",
+      "Supported campuswide enterprise AI adoption for 250+ users by leading the ChatGPT Edu rollout — managing licensing, onboarding, and faculty/student enablement.",
+      "Developed 10+ custom GPTs supporting teaching and learning across 10+ classrooms, embedding AI into academic and administrative workflows.",
+      "Developed Power BI reporting to support institutional planning and decision-making.",
+      "Developed AI training workshops for faculty and staff to build digital literacy and support workflow integration across departments.",
     ],
     techGroups: [
       { domain: "AI", items: ["ChatGPT Edu", "OpenAI", "Custom GPTs", "Prompt Engineering"] },
@@ -235,10 +220,10 @@ export const EXPERIENCE_FEATURED = [
     overview: "Designed and implemented UNK Libraries' Microsoft Fabric data architecture — taking raw survey and space-utilization data through ETL pipelines into governed semantic models and Power BI reporting for data-informed facility planning.",
     evidence: ["2,484 observations analyzed", "Microsoft Fabric architecture", "Power BI semantic models"],
     points: [
-      "Designed and implemented a Microsoft Fabric data architecture — pipelines, data structures, and semantic models — supporting reliable analytics and reporting.",
-      "Built ETL pipelines connecting Qualtrics survey data to Microsoft Fabric, with Power Query transformations for repeatable reporting.",
-      "Designed semantic models establishing a single, trusted source of truth for library analytics.",
-      "Built Power BI reports, dashboards, and visualizations tracking library space utilization.",
+      "Designed and implemented a Microsoft Fabric data architecture — pipelines, data structures, and semantic models — to support reliable analytics and reporting.",
+      "Built ETL pipelines from Qualtrics into Microsoft Fabric, with Power Query transformations designed for repeatable survey reporting.",
+      "Designed semantic models to serve as a single source of truth for library analytics.",
+      "Built Power BI reports, dashboards, and visualizations that track library space utilization.",
       "Analyzed 2,484 space-utilization observations to support data-informed facility planning.",
       "Architected the roadmap for an AI-powered knowledge infrastructure supporting information discovery.",
     ],
@@ -379,7 +364,7 @@ export const TIMELINE = [
     icon: "brain",
     title: "Graduate Assistant — Enterprise AI",
     org: "Office of Academic Innovation, UNK",
-    body: "Leading the enterprise ChatGPT Edu rollout to 250+ users, deploying 10+ custom GPTs across 10+ classrooms, building Power BI dashboards for leadership planning, and running AI training workshops for faculty and staff.",
+    body: "Supporting campuswide enterprise AI adoption — leading the ChatGPT Edu rollout to 250+ users, developing 10+ custom GPTs that support teaching and learning across 10+ classrooms, developing Power BI reporting for institutional planning, and running AI training workshops for faculty and staff.",
     current: true,
   },
   {
@@ -388,7 +373,7 @@ export const TIMELINE = [
     icon: "building",
     title: "Founder of TajKhona",
     org: "Production Startup",
-    body: "Founded and launched TajKhona, a production multilingual (EN/RU/TJ) rental marketplace now serving 470+ monthly active users across 8+ countries. Growth driven primarily through organic search, with referral traffic from AI assistants including ChatGPT.",
+    body: "Founded and launched TajKhona, a production multilingual (EN/RU/TJ) rental marketplace with 470+ monthly active users across 8+ countries (30-day reporting snapshot). Growth driven primarily through organic search, with referral traffic from AI assistants including ChatGPT.",
     gold: true,
   },
   {
@@ -480,7 +465,7 @@ export const MANIFESTO = [
   {
     n: "05",
     title: "Why products",
-    body: "Shipping is a discipline, not a finish line. TajKhona — now serving 470+ monthly active users across 8+ countries — taught me that trust — verified listings, direct communication, multilingual clarity — matters more to real users than any single feature, and that lesson now shapes how I approach every system I build.",
+    body: "Shipping is a discipline, not a finish line. TajKhona — with 470+ monthly active users across 8+ countries in a 30-day reporting snapshot — taught me that trust — verified listings, direct communication, multilingual clarity — matters more to real users than any single feature, and that lesson now shapes how I approach every system I build.",
   },
   {
     n: "06",

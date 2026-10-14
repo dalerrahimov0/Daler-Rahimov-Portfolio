@@ -1,9 +1,9 @@
 import { CONTACT } from "@/lib/data";
 
 const LINKS = [
-  { label: "About", href: "#about" },
-  { label: "Experience", href: "#experience" },
   { label: "Projects", href: "#projects" },
+  { label: "Experience", href: "#experience" },
+  { label: "About", href: "#about" },
   { label: "Tools", href: "#tools" },
   { label: "Writing", href: "#writing" },
   { label: "Contact", href: "#contact" },

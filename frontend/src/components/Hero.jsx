@@ -1,6 +1,6 @@
 import { motion, useReducedMotion } from "framer-motion";
 import { ArrowDown, FileDown } from "lucide-react";
-import { HERO_INFO, ACTIVE_SYSTEMS, STATUS_LINE, CONTACT } from "@/lib/data";
+import { STATUS_LINE, CONTACT } from "@/lib/data";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import ConceptGraph from "@/components/ConceptGraph";
 
@@ -19,12 +19,12 @@ export default function Hero() {
   return (
     <section id="top" data-testid="hero-section" className="grain relative min-h-[92vh] flex flex-col justify-center overflow-hidden">
       <div data-testid="hero-text-column" className="mx-auto max-w-6xl px-6 w-full relative z-10 pt-24">
-        {/* w-fit on these three avoid-list blocks (heading, button row, active
-            systems) is load-bearing for ConceptGraph's overlap check, not
+        {/* w-fit on these two avoid-list blocks (heading, button row) is
+            load-bearing for ConceptGraph's overlap check, not
             just tidiness — without it a plain block/flex div reports its
             FULL flow-container width (the whole text column) as its
             getBoundingClientRect(), even though the visible content (a line
-            of text, two buttons, a handful of tag pills) only occupies a
+            of text, two buttons) only occupies a
             fraction of that. An avoid-rect that wide would count as
             "overlapping" for a panel positioned anywhere near this column,
             regardless of how much real empty space is actually between them. */}
@@ -59,8 +59,8 @@ export default function Hero() {
             className="mt-8 max-w-xl text-sm sm:text-base text-zinc-500 leading-relaxed"
             data-testid="hero-tagline"
           >
-            Building production AI systems, Microsoft Fabric data architecture, and
-            full-stack products — from a production startup to enterprise AI adoption at UNK.
+            Building production AI systems, data platforms, and full-stack products—from
+            enterprise AI adoption to a multilingual startup with real users.
           </motion.p>
         </div>
         <motion.div
@@ -89,50 +89,18 @@ export default function Hero() {
           </a>
         </motion.div>
 
-        <motion.div
-          initial={reduce ? false : { opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 1.2 }}
-          className="mt-14 grid grid-cols-1 sm:grid-cols-3 gap-3 max-w-2xl"
-          data-testid="hero-info-cards"
-        >
-          {HERO_INFO.map((c) => (
-            <div key={c.label} className="border border-white/5 bg-[#0f1011] p-5">
-              <p className="font-mono2 text-xs uppercase tracking-[0.2em] text-zinc-500">{c.label}</p>
-              <p className="font-display font-medium text-white text-sm sm:text-base mt-2 leading-snug">{c.value}</p>
-              {c.org && <p className="text-zinc-500 text-xs mt-1">{c.org}</p>}
-            </div>
-          ))}
-        </motion.div>
-
-        <motion.div
-          initial={reduce ? false : { opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 1.35 }}
-          className="mt-10 w-fit"
-          data-testid="hero-active-systems"
-        >
-          <p className="font-mono2 text-xs uppercase tracking-[0.25em] text-zinc-500 mb-3">Active Systems</p>
-          <div className="flex flex-wrap gap-2">
-            {ACTIVE_SYSTEMS.map((s) => (
-              <span key={s} className="font-mono2 text-xs text-zinc-300 border border-zinc-800 px-3 py-1.5">
-                {s}
-              </span>
-            ))}
-          </div>
-        </motion.div>
-
         <motion.p
           initial={reduce ? false : { opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: 0.8, delay: 1.5 }}
-          className="mt-8 text-xs sm:text-sm text-zinc-600"
+          transition={{ duration: 0.8, delay: 1.2 }}
+          className="mt-10 max-w-2xl text-xs sm:text-sm text-zinc-600"
           data-testid="hero-status-line"
         >
           {STATUS_LINE.map((s, i) => (
             <span key={s}>
-              {s}
+              <span className="whitespace-nowrap">{s}</span>
               {i < STATUS_LINE.length - 1 && <span className="mx-2.5 text-zinc-700">•</span>}
+              <wbr />
             </span>
           ))}
         </motion.p>
