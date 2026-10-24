@@ -17,5 +17,5 @@ export const Reveal = ({ children, delay = 0, className = "", y = 24 }) => {
 };
 
 export const Overline = ({ children }) => (
-  <p className="font-mono2 text-xs uppercase tracking-[0.25em] text-zinc-500 mb-6">{children}</p>
+  <p className="font-mono2 text-xs uppercase tracking-[0.25em] text-ink-muted mb-6">{children}</p>
 );

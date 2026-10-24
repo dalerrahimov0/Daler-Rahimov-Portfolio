@@ -17,7 +17,7 @@ export default function Hero() {
   // just to keep it display:none is wasted work.
   const showGraph = useMediaQuery(GRAPH_QUERY);
   return (
-    <section id="top" data-testid="hero-section" className="grain relative min-h-[92vh] flex flex-col justify-center overflow-hidden">
+    <section id="top" data-testid="hero-section" className="grain relative min-h-[84vh] lg:min-h-[90vh] flex flex-col justify-center overflow-hidden">
       <div data-testid="hero-text-column" className="mx-auto max-w-6xl px-6 w-full relative z-10 pt-24">
         {/* w-fit on these two avoid-list blocks (heading, button row) is
             load-bearing for ConceptGraph's overlap check, not
@@ -29,7 +29,7 @@ export default function Hero() {
             "overlapping" for a panel positioned anywhere near this column,
             regardless of how much real empty space is actually between them. */}
         <div data-testid="hero-heading-block" className="w-fit">
-          <h1 className="font-display font-bold text-white tracking-tighter leading-[1.02] text-5xl sm:text-6xl lg:text-8xl">
+          <h1 className="font-display font-bold text-ink tracking-tighter leading-[1.02] text-5xl sm:text-6xl lg:text-8xl">
             {LINES.map((line, i) => (
               <span key={line} className="mask-line">
                 <motion.span
@@ -47,16 +47,16 @@ export default function Hero() {
             initial={reduce ? false : { opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.75 }}
-            className="mt-6 font-display font-medium text-zinc-300 tracking-tight text-xl sm:text-2xl lg:text-3xl"
+            className="mt-6 font-display font-medium text-ink-body tracking-tight text-xl sm:text-2xl lg:text-3xl"
             data-testid="hero-identity"
           >
-            AI Engineer <span className="text-[#5e6ad2]">•</span> Data Architect <span className="text-[#5e6ad2]">•</span> Founder
+            AI Engineer <span className="text-brand">•</span> Data Architect <span className="text-brand">•</span> Founder
           </motion.p>
           <motion.p
             initial={reduce ? false : { opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.9 }}
-            className="mt-8 max-w-xl text-sm sm:text-base text-zinc-500 leading-relaxed"
+            className="mt-8 max-w-xl text-sm sm:text-base text-ink-muted leading-relaxed"
             data-testid="hero-tagline"
           >
             Building production AI systems, data platforms, and full-stack products—from
@@ -74,7 +74,7 @@ export default function Hero() {
             href="#projects"
             onClick={(e) => { e.preventDefault(); window.__lenis ? window.__lenis.scrollTo("#projects", { offset: -136 }) : document.querySelector("#projects")?.scrollIntoView({ behavior: "smooth" }); }}
             data-testid="hero-view-work-button"
-            className="focus-ring inline-flex items-center gap-2 bg-white text-black font-medium text-sm px-7 py-3.5 hover:bg-zinc-200 transition-colors duration-200"
+            className="focus-ring inline-flex items-center gap-2 bg-inverse text-inverse-ink font-medium text-sm px-7 py-3.5 hover:bg-inverse-hover transition-colors duration-200"
           >
             View my work <ArrowDown size={15} />
           </a>
@@ -83,7 +83,7 @@ export default function Hero() {
             target="_blank"
             rel="noopener noreferrer"
             data-testid="hero-resume-button"
-            className="focus-ring inline-flex items-center gap-2 border border-zinc-800 hover:border-zinc-500 text-white text-sm px-7 py-3.5 transition-colors duration-200"
+            className="focus-ring inline-flex items-center gap-2 border border-edge-control hover:border-edge-control-hover text-ink text-sm px-7 py-3.5 transition-colors duration-200"
           >
             Resume <FileDown size={15} />
           </a>
@@ -93,13 +93,13 @@ export default function Hero() {
           initial={reduce ? false : { opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.8, delay: 1.2 }}
-          className="mt-10 max-w-2xl text-xs sm:text-sm text-zinc-600"
+          className="mt-10 max-w-2xl text-xs sm:text-sm text-ink-faint"
           data-testid="hero-status-line"
         >
           {STATUS_LINE.map((s, i) => (
             <span key={s}>
               <span className="whitespace-nowrap">{s}</span>
-              {i < STATUS_LINE.length - 1 && <span className="mx-2.5 text-zinc-700">•</span>}
+              {i < STATUS_LINE.length - 1 && <span className="mx-2.5 text-ink-ghost">•</span>}
               <wbr />
             </span>
           ))}

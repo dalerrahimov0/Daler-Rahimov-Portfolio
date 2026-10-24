@@ -4,6 +4,21 @@
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta name="theme-color" content="#000000" />
+        <script>
+            // Runs before first paint so a returning visitor never sees the
+            // wrong theme flash. Dark is the default; any storage failure
+            // falls back to it. Keep in sync with src/hooks/use-theme.js.
+            (function () {
+                var theme = "dark";
+                try {
+                    if (localStorage.getItem("theme") === "light") theme = "light";
+                } catch (e) {}
+                document.documentElement.setAttribute("data-theme", theme);
+                if (theme === "light") {
+                    document.querySelector('meta[name="theme-color"]').setAttribute("content", "#f8f7f4");
+                }
+            })();
+        </script>
         <link rel="icon" href="/branding/favicon.ico" sizes="any" />
         <link rel="icon" href="/branding/favicon.svg" type="image/svg+xml" />
         <link rel="icon" href="/branding/favicon-16.png" sizes="16x16" type="image/png" />

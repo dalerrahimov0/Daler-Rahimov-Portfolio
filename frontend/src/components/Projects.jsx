@@ -4,7 +4,7 @@ import { PROJECTS } from "@/lib/data";
 import { Diagram } from "@/components/Diagrams";
 import { Check, ArrowUpRight, Github, Maximize2, X, ChevronLeft, ChevronRight, Images } from "lucide-react";
 
-const GOLD = "#c9a66b";
+const GOLD = "rgb(var(--gold))";
 
 const ExpandableImage = ({ src, alt, className, testId, onExpand, isFlagship }) => (
   <button
@@ -18,7 +18,7 @@ const ExpandableImage = ({ src, alt, className, testId, onExpand, isFlagship }) 
     <span
       className={
         isFlagship
-          ? "absolute inset-0 flex items-center justify-center bg-[#c9a66b]/0 group-hover/img:bg-[#c9a66b]/10 transition-colors duration-300"
+          ? "absolute inset-0 flex items-center justify-center bg-gold/0 group-hover/img:bg-gold/10 transition-colors duration-300"
           : "absolute inset-0 flex items-center justify-center bg-black/0 group-hover/img:bg-black/30 transition-colors duration-300"
       }
     >
@@ -53,7 +53,7 @@ const Lightbox = ({ lightbox, onClose, onNavigate }) => {
       role="dialog"
       aria-modal="true"
       onClick={onClose}
-      className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-sm flex items-center justify-center p-6 cursor-zoom-out"
+      className="fixed inset-0 z-[100] bg-scrim backdrop-blur-sm flex items-center justify-center p-6 cursor-zoom-out"
       data-testid="project-image-lightbox"
     >
       <button
@@ -61,7 +61,7 @@ const Lightbox = ({ lightbox, onClose, onNavigate }) => {
         onClick={onClose}
         aria-label="Close expanded image"
         data-testid="lightbox-close-button"
-        className="focus-ring absolute top-6 right-6 text-zinc-400 hover:text-white transition-colors duration-200"
+        className="focus-ring absolute top-6 right-6 text-ink-soft hover:text-ink transition-colors duration-200"
       >
         <X size={22} />
       </button>
@@ -72,7 +72,7 @@ const Lightbox = ({ lightbox, onClose, onNavigate }) => {
           onClick={(e) => { e.stopPropagation(); onNavigate(-1); }}
           aria-label="Previous image"
           data-testid="lightbox-prev-button"
-          className="focus-ring absolute left-3 sm:left-8 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-white transition-colors duration-200"
+          className="focus-ring absolute left-3 sm:left-8 top-1/2 -translate-y-1/2 text-ink-soft hover:text-ink transition-colors duration-200"
         >
           <ChevronLeft size={32} />
         </button>
@@ -83,9 +83,10 @@ const Lightbox = ({ lightbox, onClose, onNavigate }) => {
           src={image.src}
           alt={image.alt}
           className="max-h-[80vh] max-w-[85vw] object-contain"
+          style={{ boxShadow: "var(--lightbox-frame)" }}
         />
         {hasMultiple && (
-          <figcaption className="font-mono2 text-xs text-zinc-500 tracking-widest">
+          <figcaption className="font-mono2 text-xs text-ink-muted tracking-widest">
             {index + 1} / {images.length}
           </figcaption>
         )}
@@ -97,7 +98,7 @@ const Lightbox = ({ lightbox, onClose, onNavigate }) => {
           onClick={(e) => { e.stopPropagation(); onNavigate(1); }}
           aria-label="Next image"
           data-testid="lightbox-next-button"
-          className="focus-ring absolute right-3 sm:right-8 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-white transition-colors duration-200"
+          className="focus-ring absolute right-3 sm:right-8 top-1/2 -translate-y-1/2 text-ink-soft hover:text-ink transition-colors duration-200"
         >
           <ChevronRight size={32} />
         </button>
@@ -107,7 +108,7 @@ const Lightbox = ({ lightbox, onClose, onNavigate }) => {
 };
 
 const ProjectLinks = ({ p, images, onExpand, isFlagship }) => {
-  const iconClass = "text-[#5e6ad2]";
+  const iconClass = "text-brand";
   return (
     <div className="mt-12 flex flex-wrap items-center gap-6">
       {p.live && (
@@ -118,8 +119,8 @@ const ProjectLinks = ({ p, images, onExpand, isFlagship }) => {
           data-testid={`project-${p.id}-live-link`}
           className={
             isFlagship
-              ? "focus-ring inline-flex items-center gap-2 bg-[#c9a66b] text-black font-medium text-sm px-6 py-3 hover:bg-[#d9b87e] transition-colors duration-200"
-              : "focus-ring inline-flex items-center gap-2 bg-white text-black font-medium text-sm px-6 py-3 hover:bg-zinc-200 transition-colors duration-200"
+              ? "focus-ring inline-flex items-center gap-2 bg-gold text-black font-medium text-sm px-6 py-3 hover:bg-gold-hover transition-colors duration-200"
+              : "focus-ring inline-flex items-center gap-2 bg-inverse text-inverse-ink font-medium text-sm px-6 py-3 hover:bg-inverse-hover transition-colors duration-200"
           }
         >
           Live site <ArrowUpRight size={15} />
@@ -131,7 +132,7 @@ const ProjectLinks = ({ p, images, onExpand, isFlagship }) => {
           target="_blank"
           rel="noopener noreferrer"
           data-testid={`project-${p.id}-github-link`}
-          className="focus-ring inline-flex items-center gap-2 text-zinc-300 hover:text-white text-sm transition-colors duration-200"
+          className="focus-ring inline-flex items-center gap-2 text-ink-body hover:text-ink text-sm transition-colors duration-200"
         >
           <Github size={15} className={iconClass} /> GitHub
         </a>
@@ -140,7 +141,7 @@ const ProjectLinks = ({ p, images, onExpand, isFlagship }) => {
         <a
           href={p.writingHref}
           data-testid={`project-${p.id}-writing-link`}
-          className="focus-ring inline-flex items-center gap-2 text-zinc-300 hover:text-white text-sm transition-colors duration-200"
+          className="focus-ring inline-flex items-center gap-2 text-ink-body hover:text-ink text-sm transition-colors duration-200"
         >
           <ArrowUpRight size={15} className={iconClass} /> Related writing
         </a>
@@ -149,7 +150,7 @@ const ProjectLinks = ({ p, images, onExpand, isFlagship }) => {
         type="button"
         onClick={() => onExpand(images, 0)}
         data-testid={`project-${p.id}-screenshots-button`}
-        className="focus-ring inline-flex items-center gap-2 text-zinc-300 hover:text-white text-sm transition-colors duration-200"
+        className="focus-ring inline-flex items-center gap-2 text-ink-body hover:text-ink text-sm transition-colors duration-200"
       >
         <Images size={15} className={iconClass} /> View Screenshots
       </button>
@@ -160,23 +161,23 @@ const ProjectLinks = ({ p, images, onExpand, isFlagship }) => {
 const CaseStudy = ({ p, onExpand }) => {
   const images = [{ src: p.image, alt: `${p.name} project visual` }, ...(p.gallery || [])];
   const isFlagship = p.accent === "gold";
-  const accentColor = isFlagship ? GOLD : "#5e6ad2";
-  const accentTextClass = isFlagship ? "text-[#c9a66b]" : "text-[#5e6ad2]";
-  const sectionBorderClass = isFlagship ? "border-[#c9a66b]/12" : "border-white/5";
-  const chipClass = "font-mono2 text-xs text-zinc-300 border border-zinc-800 px-3 py-1.5";
+  const accentColor = isFlagship ? GOLD : "rgb(var(--brand))";
+  const accentTextClass = isFlagship ? "text-gold-ink" : "text-brand";
+  const sectionBorderClass = isFlagship ? "border-gold-edge" : "border-edge-subtle";
+  const chipClass = "font-mono2 text-xs text-ink-body border border-edge-control px-3 py-1.5";
 
   return (
   <Reveal>
     <article data-testid={`project-${p.id}`} className={`border-t ${sectionBorderClass} pt-16`}>
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
         <div className="lg:col-span-4">
-          <span className="font-display font-bold text-6xl text-zinc-800 select-none">{p.index}</span>
+          <span className="font-display font-bold text-6xl text-ink-numeral select-none">{p.index}</span>
           <p className={`font-mono2 text-xs uppercase tracking-[0.25em] ${accentTextClass} mt-6 mb-3`}>{p.kind}</p>
-          <h3 className="font-display font-bold text-white tracking-tight text-2xl sm:text-3xl">{p.name}</h3>
-          <p className="text-zinc-500 mt-3 leading-relaxed">{p.tagline}</p>
+          <h3 className="font-display font-bold text-ink tracking-tight text-2xl sm:text-3xl">{p.name}</h3>
+          <p className="text-ink-muted mt-3 leading-relaxed">{p.tagline}</p>
         </div>
         <div className="lg:col-span-8">
-          <div className="overflow-hidden border border-white/5">
+          <div className="overflow-hidden border border-edge-subtle">
             <ExpandableImage
               src={images[0].src}
               alt={images[0].alt}
@@ -189,7 +190,7 @@ const CaseStudy = ({ p, onExpand }) => {
           {p.gallery?.length > 0 && (
             <div className="mt-3 grid grid-cols-3 gap-3">
               {p.gallery.map((g, i) => (
-                <div key={g.src} className="overflow-hidden border border-white/5">
+                <div key={g.src} className="overflow-hidden border border-edge-subtle">
                   <ExpandableImage
                     src={g.src}
                     alt={g.alt}
@@ -207,18 +208,18 @@ const CaseStudy = ({ p, onExpand }) => {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 mt-14">
         <div>
-          <h4 className="font-mono2 text-xs uppercase tracking-[0.25em] text-zinc-500 mb-4">Problem</h4>
-          <p className="text-zinc-400 leading-relaxed">{p.problem}</p>
+          <h4 className="font-mono2 text-xs uppercase tracking-[0.25em] text-ink-muted mb-4">Problem</h4>
+          <p className="text-ink-soft leading-relaxed">{p.problem}</p>
         </div>
         <div>
-          <h4 className="font-mono2 text-xs uppercase tracking-[0.25em] text-zinc-500 mb-4">Solution</h4>
-          <p className="text-zinc-400 leading-relaxed">{p.solution}</p>
+          <h4 className="font-mono2 text-xs uppercase tracking-[0.25em] text-ink-muted mb-4">Solution</h4>
+          <p className="text-ink-soft leading-relaxed">{p.solution}</p>
         </div>
       </div>
 
       {p.diagram && (
-        <div className="mt-14 border border-white/5 bg-[#0f1011] p-6 sm:p-10">
-          <h4 className="font-mono2 text-xs uppercase tracking-[0.25em] text-zinc-500 mb-6">Architecture</h4>
+        <div className="mt-14 border border-edge-subtle bg-surface p-6 sm:p-10">
+          <h4 className="font-mono2 text-xs uppercase tracking-[0.25em] text-ink-muted mb-6">Architecture</h4>
           <div className="min-h-[200px]">
             <Diagram type={p.diagram} accentColor={accentColor} />
           </div>
@@ -227,13 +228,13 @@ const CaseStudy = ({ p, onExpand }) => {
 
       {p.keyIdeas?.length > 0 && (
         <div className="mt-14">
-          <h4 className="font-mono2 text-xs uppercase tracking-[0.25em] text-zinc-500 mb-5">Key Ideas</h4>
+          <h4 className="font-mono2 text-xs uppercase tracking-[0.25em] text-ink-muted mb-5">Key Ideas</h4>
           <ul className="space-y-4">
             {p.keyIdeas.map((k) => (
-              <li key={k.title} className="flex items-start gap-3 text-zinc-400 leading-relaxed">
-                <span className="text-[#5e6ad2] mt-1.5 text-xs" aria-hidden="true">◆</span>
+              <li key={k.title} className="flex items-start gap-3 text-ink-soft leading-relaxed">
+                <span className="text-brand mt-1.5 text-xs" aria-hidden="true">◆</span>
                 <span>
-                  <span className="text-white font-medium">{k.title}</span> — {k.body}
+                  <span className="text-ink font-medium">{k.title}</span> — {k.body}
                 </span>
               </li>
             ))}
@@ -243,7 +244,7 @@ const CaseStudy = ({ p, onExpand }) => {
 
       {p.features?.length > 0 && (
         <div className="mt-14">
-          <h4 className="font-mono2 text-xs uppercase tracking-[0.25em] text-zinc-500 mb-5">Key Features</h4>
+          <h4 className="font-mono2 text-xs uppercase tracking-[0.25em] text-ink-muted mb-5">Key Features</h4>
           <div className="flex flex-wrap gap-2">
             {p.features.map((f) => (
               <span key={f} className={chipClass}>
@@ -256,21 +257,21 @@ const CaseStudy = ({ p, onExpand }) => {
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 mt-14">
         <div className="lg:col-span-5">
-          <h4 className="font-mono2 text-xs uppercase tracking-[0.25em] text-zinc-500 mb-5">Tech Stack</h4>
+          <h4 className="font-mono2 text-xs uppercase tracking-[0.25em] text-ink-muted mb-5">Tech Stack</h4>
           <div className="flex flex-wrap gap-2">
             {p.tech.map((t) => (
-              <span key={t} className="font-mono2 text-xs text-zinc-300 border border-zinc-800 px-3 py-1.5">
+              <span key={t} className="font-mono2 text-xs text-ink-body border border-edge-control px-3 py-1.5">
                 {t}
               </span>
             ))}
           </div>
         </div>
         <div className="lg:col-span-7">
-          <h4 className="font-mono2 text-xs uppercase tracking-[0.25em] text-zinc-500 mb-5">Outcome</h4>
+          <h4 className="font-mono2 text-xs uppercase tracking-[0.25em] text-ink-muted mb-5">Outcome</h4>
           <ul className="space-y-3">
             {p.outcome.map((o) => (
-              <li key={o} className="flex items-start gap-3 text-zinc-400 leading-relaxed">
-                <Check size={15} className="text-[#5e6ad2] mt-1 shrink-0" aria-hidden="true" />
+              <li key={o} className="flex items-start gap-3 text-ink-soft leading-relaxed">
+                <Check size={15} className="text-brand mt-1 shrink-0" aria-hidden="true" />
                 <span>{o}</span>
               </li>
             ))}
@@ -280,11 +281,11 @@ const CaseStudy = ({ p, onExpand }) => {
 
       <ProjectLinks p={p} images={images} onExpand={onExpand} isFlagship={isFlagship} />
 
-      <div className="mt-12 border-l-2 border-[#5e6ad2]/40 pl-6">
-        <h4 className="font-mono2 text-xs uppercase tracking-[0.25em] text-zinc-500 mb-3">Lesson Learned</h4>
-        <p className="text-white text-base sm:text-lg leading-relaxed max-w-3xl">{p.lesson}</p>
+      <div className="mt-12 border-l-2 border-brand/40 pl-6">
+        <h4 className="font-mono2 text-xs uppercase tracking-[0.25em] text-ink-muted mb-3">Lesson Learned</h4>
+        <p className="text-ink text-base sm:text-lg leading-relaxed max-w-3xl">{p.lesson}</p>
         {p.positioning && (
-          <p className="text-zinc-400 leading-relaxed max-w-3xl mt-4">{p.positioning}</p>
+          <p className="text-ink-soft leading-relaxed max-w-3xl mt-4">{p.positioning}</p>
         )}
       </div>
     </article>
@@ -307,10 +308,10 @@ export default function Projects() {
     <section id="projects" data-testid="projects-section" className="mx-auto max-w-6xl px-6 py-32 lg:py-44">
       <Reveal>
         <Overline>Featured Projects</Overline>
-        <h2 className="font-display font-bold text-white tracking-tight text-2xl sm:text-3xl lg:text-4xl max-w-2xl leading-tight">
+        <h2 className="font-display font-bold text-ink tracking-tight text-2xl sm:text-3xl lg:text-4xl max-w-2xl leading-tight">
           Case studies, not cards.
         </h2>
-        <p className="text-zinc-500 mt-5 max-w-xl leading-relaxed">
+        <p className="text-ink-muted mt-5 max-w-xl leading-relaxed">
           Each project follows the same arc: problem, solution, architecture, outcome — and what it taught me.
         </p>
       </Reveal>

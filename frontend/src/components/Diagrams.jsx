@@ -13,19 +13,25 @@ import { useMediaQuery } from "@/hooks/use-media-query";
 // breakpoint we skip whileInView/IntersectionObserver entirely and render the
 // final visible state directly. Desktop keeps the richer scroll-triggered
 // animation unchanged.
-const Box = ({ x, y, w = 120, h = 44, label, accent = false, color = "#5e6ad2", delay = 0, reduce, animated = true }) => {
+//
+// Colors come from the theme tokens in index.css and are applied via `style`
+// (SVG presentation attributes don't resolve var()), so every diagram follows
+// the active theme with no theme logic here.
+const BRAND = "rgb(var(--brand))";
+const Box = ({ x, y, w = 120, h = 44, label, accent = false, color = BRAND, accentText = "#ffffff", delay = 0, reduce, animated = true }) => {
   const rect = (
     <rect
       x={x - w / 2} y={y - h / 2} width={w} height={h}
-      fill={accent ? color : "#0f1011"}
-      stroke={accent ? color : "#3f3f46"} strokeWidth="1" rx="2"
+      strokeWidth="1" rx="2"
+      style={{ fill: accent ? color : "rgb(var(--surface))", stroke: accent ? color : "var(--diagram-stroke)" }}
     />
   );
   const text = (
     <text
       x={x} y={y} textAnchor="middle" dominantBaseline="central"
-      fill={accent ? "#ffffff" : "#d4d4d8"} fontSize="12"
+      fontSize="12"
       fontFamily="JetBrains Mono, monospace"
+      style={{ fill: accent ? accentText : "rgb(var(--ink-body))" }}
     >
       {label}
     </text>
@@ -48,15 +54,16 @@ const Box = ({ x, y, w = 120, h = 44, label, accent = false, color = "#5e6ad2", 
   );
 };
 
-const Edge = ({ x1, y1, x2, y2, color = "#5e6ad2", delay = 0, reduce, animated = true }) => {
+const Edge = ({ x1, y1, x2, y2, color = BRAND, delay = 0, reduce, animated = true }) => {
   if (!animated || reduce) {
-    return <line x1={x1} y1={y1} x2={x2} y2={y2} stroke={color} strokeWidth="1" strokeOpacity="0.55" />;
+    return <line x1={x1} y1={y1} x2={x2} y2={y2} strokeWidth="1" strokeOpacity="0.55" style={{ stroke: color }} />;
   }
 
   return (
     <motion.line
       x1={x1} y1={y1} x2={x2} y2={y2}
-      stroke={color} strokeWidth="1" strokeOpacity="0.55"
+      strokeWidth="1" strokeOpacity="0.55"
+      style={{ stroke: color }}
       initial={{ pathLength: 0 }}
       whileInView={{ pathLength: 1 }}
       viewport={{ once: true }}
@@ -134,7 +141,11 @@ export const PAIDiagram = () => {
   );
 };
 
-export const TajKhonaDiagram = ({ accentColor = "#5e6ad2" }) => {
+// Text on the flagship's gold fill: --gold-contrast is white in dark (as
+// before) and charcoal in light, where white on champagne is unreadable.
+const GOLD_CONTRAST = "rgb(var(--gold-contrast))";
+
+export const TajKhonaDiagram = ({ accentColor = BRAND }) => {
   const reduce = useReducedMotion();
   const isMobile = useMediaQuery(MOBILE_QUERY);
 
@@ -149,7 +160,7 @@ export const TajKhonaDiagram = ({ accentColor = "#5e6ad2" }) => {
         <Edge x1={190} y1={188} x2={100} y2={365} reduce={reduce} animated={false} />
         <Edge x1={190} y1={188} x2={280} y2={365} reduce={reduce} animated={false} />
         <Box x={190} y={50} w={170} h={46} label="Next.js Client" reduce={reduce} animated={false} />
-        <Box x={190} y={160} w={190} h={56} label="Supabase Platform" accent color={accentColor} reduce={reduce} animated={false} />
+        <Box x={190} y={160} w={190} h={56} label="Supabase Platform" accent color={accentColor} accentText={accentColor === BRAND ? undefined : GOLD_CONTRAST} reduce={reduce} animated={false} />
         <Box x={100} y={280} w={150} h={42} label="Auth + Postgres" reduce={reduce} animated={false} />
         <Box x={280} y={280} w={130} h={42} label="Maps" reduce={reduce} animated={false} />
         <Box x={100} y={390} w={130} h={42} label="AI Layer" reduce={reduce} animated={false} />
@@ -166,7 +177,7 @@ export const TajKhonaDiagram = ({ accentColor = "#5e6ad2" }) => {
       <Edge x1={400} y1={210} x2={510} y2={290} delay={0.9} reduce={reduce} />
       <Edge x1={400} y1={210} x2={670} y2={290} delay={1.05} reduce={reduce} />
       <Box x={400} y={50} w={170} h={46} label="Next.js Client" delay={0.1} reduce={reduce} />
-      <Box x={400} y={180} w={190} h={56} label="Supabase Platform" accent color={accentColor} delay={0.4} reduce={reduce} />
+      <Box x={400} y={180} w={190} h={56} label="Supabase Platform" accent color={accentColor} accentText={accentColor === BRAND ? undefined : GOLD_CONTRAST} delay={0.4} reduce={reduce} />
       <Box x={150} y={300} w={130} h={42} label="Auth + Postgres" delay={0.7} reduce={reduce} />
       <Box x={330} y={300} w={110} h={42} label="Maps" delay={0.85} reduce={reduce} />
       <Box x={510} y={300} w={110} h={42} label="AI Layer" delay={1.0} reduce={reduce} />

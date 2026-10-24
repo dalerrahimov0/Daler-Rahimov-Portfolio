@@ -5,9 +5,128 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+  Theme tokens. Dark is the default (and the reference design); light is
+  opted into by `data-theme="light"` on <html>, set before first paint by the
+  inline script in public/index.html. Channel-only values ("r g b") are used
+  where Tailwind needs `/<alpha>` modifiers (see tailwind.config.js); the
+  rest are complete colors. Every theme-dependent color in the components
+  resolves to one of these — nothing branches on the theme in JS.
+*/
 :root {
-    --bg: #0a0a0a;
-    --accent: #5e6ad2;
+    color-scheme: dark;
+
+    --canvas: 10 10 10;            /* #0a0a0a page */
+    --surface: 15 16 17;           /* #0f1011 cards */
+    --surface-sunken: rgb(0 0 0 / 0.2);
+
+    --ink: 255 255 255;            /* headings */
+    --ink-strong: 228 228 231;     /* zinc-200 */
+    --ink-body: 212 212 216;       /* zinc-300 */
+    --ink-soft: 161 161 170;       /* zinc-400 */
+    --ink-muted: 138 138 147;      /* zinc-500, lifted to 5.6:1 on cards */
+    --ink-faint: 124 124 132;      /* zinc-600, lifted to 4.6:1 on cards */
+    --ink-ghost: 63 63 70;         /* zinc-700 */
+    --ink-numeral: 39 39 42;       /* zinc-800 */
+
+    --edge-subtle: rgb(255 255 255 / 0.05);
+    --edge: rgb(255 255 255 / 0.1);
+    --edge-strong: rgb(255 255 255 / 0.2);
+    --edge-control: #27272a;
+    --edge-control-hover: #71717a;
+
+    --brand: 94 106 210;           /* #5e6ad2 — fills, borders, graph */
+    --brand-ink: 110 122 216;      /* #6e7ad8 — brand as text, 4.9:1 on cards */
+    --brand-soft: #6c78d6;
+    --gold: 201 166 107;           /* #c9a66b — TajKhona only */
+    --gold-hover: 217 184 126;
+    --gold-ink: 201 166 107;       /* gold used as text */
+    --gold-contrast: 255 255 255;  /* text on a gold fill inside diagrams */
+    --gold-edge: rgb(201 166 107 / 0.12); /* TajKhona's divider */
+
+    --inverse: 255 255 255;        /* primary button fill */
+    --inverse-ink: 0 0 0;
+    --inverse-hover: 228 228 231;
+
+    --nav-bg: rgb(0 0 0 / 0.6);
+    --wash: rgb(255 255 255 / 0.015);
+    --scrim: rgb(0 0 0 / 0.9);
+    --lightbox-frame: none;
+    --grain-opacity: 0.05;
+
+    --diagram-stroke: #3f3f46;
+    --graph-dim: rgb(255 255 255 / 0.025);
+    --graph-dim-icon: rgb(255 255 255 / 0.15);
+    --graph-glow: 1;
+    --graph-spoke-alpha: 0.5;
+    --graph-chain-alpha: 0.5;
+    --graph-panel: rgb(10 10 10 / 0.6);
+
+    --bg: rgb(var(--canvas));
+    --accent: rgb(var(--brand));
+}
+
+:root[data-theme="light"] {
+    color-scheme: light;
+
+    --canvas: 248 247 244;         /* warm white */
+    --surface: 255 255 255;
+    --surface-sunken: #f3f1ec;
+
+    --ink: 28 25 23;               /* charcoal */
+    --ink-strong: 41 37 36;
+    --ink-body: 58 54 51;
+    --ink-soft: 75 71 67;
+    --ink-muted: 93 89 85;
+    --ink-faint: 117 112 106;
+    --ink-ghost: 180 176 168;
+    --ink-numeral: 224 220 212;
+
+    --edge-subtle: #ebe8e2;
+    --edge: #e0ddd6;
+    --edge-strong: #c8c4bb;
+    --edge-control: #dcd8d0;
+    --edge-control-hover: #9d9a93;
+
+    --brand: 75 86 192;            /* #4b56c0 — #5e6ad2 deepened for AA on light */
+    --brand-ink: 75 86 192;
+    --brand-soft: rgb(75 86 192);
+    --gold: 201 166 107;
+    --gold-hover: 214 180 122;
+    --gold-ink: 138 106 48;        /* antique gold, AA on warm white */
+    --gold-contrast: 28 25 23;
+    --gold-edge: rgb(138 106 48 / 0.4);
+
+    --inverse: 28 25 23;
+    --inverse-ink: 250 250 249;
+    --inverse-hover: 58 54 51;
+
+    --nav-bg: rgb(248 247 244 / 0.75);
+    --wash: rgb(28 25 23 / 0.025);
+    --scrim: rgb(248 247 244 / 0.96);
+    /* screenshots are often light themselves — a hairline + lift keeps their edge visible */
+    --lightbox-frame: 0 0 0 1px #e0ddd6, 0 24px 60px -12px rgb(28 25 23 / 0.28);
+    --grain-opacity: 0.035;
+
+    --diagram-stroke: #c8c4bb;
+    --graph-dim: rgb(28 25 23 / 0.06);
+    --graph-dim-icon: rgb(28 25 23 / 0.2);
+    --graph-glow: 0.55;
+    --graph-spoke-alpha: 0.72;
+    --graph-chain-alpha: 0.75;
+    --graph-panel: rgb(248 247 244 / 0.82);
+}
+
+/* Applied only for the moment of a theme switch (see hooks/use-theme.js), so
+   the regular hover/transform transitions everywhere else are untouched. */
+html.theme-transition,
+html.theme-transition *,
+html.theme-transition *::before,
+html.theme-transition *::after {
+    transition-property: color, background-color, border-color, fill, stroke, box-shadow, outline-color !important;
+    transition-duration: 200ms !important;
+    transition-timing-function: ease !important;
+    transition-delay: 0s !important;
 }
 
 html {
@@ -25,7 +144,7 @@ html.lenis, html.lenis body {
 body {
     margin: 0;
     background-color: var(--bg);
-    color: #d4d4d8;
+    color: rgb(var(--ink-body));
     font-family: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -41,7 +160,7 @@ body {
 }
 
 ::selection {
-    background: #5e6ad2;
+    background: rgb(var(--brand));
     color: #fff;
 }
 
@@ -50,7 +169,7 @@ body {
     position: absolute;
     inset: 0;
     pointer-events: none;
-    opacity: 0.05;
+    opacity: var(--grain-opacity);
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
     z-index: 1;
 }
@@ -61,7 +180,7 @@ body {
 }
 
 .focus-ring:focus-visible {
-    outline: 2px solid #5e6ad2;
+    outline: 2px solid rgb(var(--brand));
     outline-offset: 3px;
 }
 

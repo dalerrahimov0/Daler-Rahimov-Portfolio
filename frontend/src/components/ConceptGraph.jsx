@@ -4,14 +4,20 @@ import { Network, Rocket, Building2, Box, PenLine, BarChart3, Brain } from "luci
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { GRAPH } from "@/lib/data";
 
-const ACCENT = "#5e6ad2";
+// Colors resolve through the theme tokens in index.css, so the graph follows
+// the active theme without re-rendering. SVG presentation attributes don't
+// accept var(), which is why every color below is applied via `style`.
+const ACCENT = "rgb(var(--brand))";
+const brandAlpha = (a) => `rgb(var(--brand) / ${a})`;
+// Glows are scaled by --graph-glow so they stay a soft halo on light surfaces.
+const brandGlow = (a) => `rgb(var(--brand) / calc(${a} * var(--graph-glow)))`;
 // Resting-state values matched to the hero's NetworkGraphic: node stroke/fill
 // as its open-circle nodes, spoke stroke as its connecting lines (accent at
 // 50% opacity). Dimmed and emphasized states are untouched.
 const NODE_REST_STROKE = ACCENT;
-const SPOKE_REST_STROKE = "rgba(94,106,210,0.5)";
-const DIM_STROKE = "rgba(255,255,255,0.025)";
-const BADGE_BG = "#0a0a0a";
+const SPOKE_REST_STROKE = brandAlpha("var(--graph-spoke-alpha)");
+const DIM_STROKE = "var(--graph-dim)";
+const BADGE_BG = "rgb(var(--canvas))";
 
 const CONCEPT_ICONS = {
   systems: Network,
@@ -217,6 +223,14 @@ const ChainDetail = ({ concept, reduce, containerRef }) => {
       const bounds = heroEl
         ? { left: 0, right: vw, top: heroEl.getBoundingClientRect().top, bottom: heroEl.getBoundingClientRect().bottom }
         : { left: containerRect.left, right: containerRect.right, top: containerRect.top, bottom: containerRect.bottom };
+      // The fixed navbar overlays the top of the page (the hero starts at
+      // y=0, underneath it), so whatever the context, nothing above its bottom
+      // edge is actually visible — on short laptop viewports (~720-768px) a
+      // panel for an upper node used to be clamped into that strip. Raising
+      // the top bound to it gives the panel the same CLAMP_MARGIN of
+      // clearance below the navbar that it gets from every other edge.
+      const headerEl = document.querySelector("header");
+      if (headerEl) bounds.top = Math.max(bounds.top, headerEl.getBoundingClientRect().bottom);
 
       // Every sibling content block the panel must never overlap, gathered by
       // its own stable data-testid rather than one hardcoded boundary box —
@@ -463,7 +477,7 @@ const ChainDetail = ({ concept, reduce, containerRef }) => {
         // angle/width combinations where the repositioning above still can't
         // fully clear the active chain's own line: a line crossing behind the
         // panel reads as passing behind a card, not through the letters.
-        background: "rgba(10,10,10,0.6)",
+        background: "var(--graph-panel)",
         backdropFilter: "blur(6px)",
         WebkitBackdropFilter: "blur(6px)",
         transform: `translate(${H_TRANSFORM[pos.hSide]}, ${V_TRANSFORM[pos.vSide]}) translate(${pos.dx}px, ${pos.dy}px)`,
@@ -473,7 +487,7 @@ const ChainDetail = ({ concept, reduce, containerRef }) => {
       exit={reduce ? undefined : { opacity: 0 }}
       transition={{ duration: reduce ? 0 : 0.25 }}
     >
-      <p data-testid={`concept-graph-label-${concept.id}`} className="font-display font-semibold text-white text-lg tracking-tight">
+      <p data-testid={`concept-graph-label-${concept.id}`} className="font-display font-semibold text-ink text-lg tracking-tight">
         {concept.label}
       </p>
       <div className="mt-2 space-y-1">
@@ -485,7 +499,7 @@ const ChainDetail = ({ concept, reduce, containerRef }) => {
             <motion.p
               key={label}
               data-testid={`concept-graph-chain-label-${i}`}
-              className="text-zinc-400 text-sm leading-snug"
+              className="text-ink-soft text-sm leading-snug"
               initial={reduce ? false : { opacity: 0, x: -4 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: reduce ? 0 : 0.3, delay: reduce ? 0 : 0.08 * (i + 1), ease: [0.22, 1, 0.36, 1] }}
@@ -499,7 +513,7 @@ const ChainDetail = ({ concept, reduce, containerRef }) => {
           <>
             <motion.p
               data-testid="concept-graph-chain-label-0"
-              className="text-zinc-200 text-base font-semibold leading-snug"
+              className="text-ink-strong text-base font-semibold leading-snug"
               initial={reduce ? false : { opacity: 0, x: -4 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: reduce ? 0 : 0.3, delay: reduce ? 0 : 0.08 * 1, ease: [0.22, 1, 0.36, 1] }}
@@ -511,7 +525,7 @@ const ChainDetail = ({ concept, reduce, containerRef }) => {
                 <motion.p
                   key={label}
                   data-testid={`concept-graph-chain-label-${i + 1}`}
-                  className="text-zinc-500 text-xs font-normal leading-snug"
+                  className="text-ink-muted text-xs font-normal leading-snug"
                   initial={reduce ? false : { opacity: 0, x: -4 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ duration: reduce ? 0 : 0.3, delay: reduce ? 0 : 0.08 * (i + 2), ease: [0.22, 1, 0.36, 1] }}
@@ -598,11 +612,10 @@ export default function ConceptGraph({ className = "" }) {
                   y1={centerPos.y}
                   x2={pos.x}
                   y2={pos.y}
-                  stroke={ACCENT}
                   strokeWidth={isActive ? 5 : 3}
                   opacity={glowOpacity}
                   filter="url(#spoke-glow)"
-                  style={{ transition: reduce ? "none" : "opacity 0.4s ease" }}
+                  style={{ stroke: ACCENT, transition: reduce ? "none" : "opacity 0.4s ease" }}
                 />
               )}
               <line
@@ -610,9 +623,8 @@ export default function ConceptGraph({ className = "" }) {
                 y1={centerPos.y}
                 x2={pos.x}
                 y2={pos.y}
-                stroke={isActive ? ACCENT : dimmed ? DIM_STROKE : SPOKE_REST_STROKE}
                 strokeWidth={isActive ? 1.25 : 1}
-                style={{ transition: reduce ? "none" : "stroke 0.4s ease" }}
+                style={{ stroke: isActive ? ACCENT : dimmed ? DIM_STROKE : SPOKE_REST_STROKE, transition: reduce ? "none" : "stroke 0.4s ease" }}
               />
             </g>
           );
@@ -631,10 +643,12 @@ export default function ConceptGraph({ className = "" }) {
                       y1={from.y}
                       x2={to.x}
                       y2={to.y}
-                      stroke={ACCENT}
                       strokeWidth="1"
+                      // Line alpha is in the stroke (token, 0.5 in dark as before) so light
+                      // mode can raise it without changing the opacity animation.
+                      style={{ stroke: brandAlpha("var(--graph-chain-alpha)") }}
                       initial={reduce ? false : { pathLength: 0, opacity: 0 }}
-                      animate={{ pathLength: 1, opacity: 0.5 }}
+                      animate={{ pathLength: 1, opacity: 1 }}
                       exit={reduce ? undefined : { opacity: 0 }}
                       transition={{ duration: reduce ? 0 : 0.4, delay: reduce ? 0 : i * 0.07, ease: [0.22, 1, 0.36, 1] }}
                     />
@@ -642,9 +656,8 @@ export default function ConceptGraph({ className = "" }) {
                       cx={to.x}
                       cy={to.y}
                       r={CHAIN_NODE_R}
-                      fill="#0a0a0a"
-                      stroke={ACCENT}
                       strokeWidth="1"
+                      style={{ fill: BADGE_BG, stroke: ACCENT }}
                       initial={reduce ? false : { opacity: 0, scale: 0.6 }}
                       animate={{ opacity: 1, scale: 1 }}
                       exit={reduce ? undefined : { opacity: 0, scale: 0.6 }}
@@ -662,9 +675,8 @@ export default function ConceptGraph({ className = "" }) {
           cx={centerPos.x}
           cy={centerPos.y}
           r={CENTER_R}
-          fill={ACCENT}
-          stroke={NODE_REST_STROKE}
           strokeWidth="1.5"
+          style={{ fill: ACCENT, stroke: NODE_REST_STROKE }}
           aria-hidden="true"
         />
       </svg>
@@ -684,13 +696,13 @@ export default function ConceptGraph({ className = "" }) {
           const dimmed = activeId !== null && !isActive;
           const pos = ringPos(cfg, c.angle, 0);
           const Icon = CONCEPT_ICONS[c.id];
-          const borderColor = isActive ? ACCENT : dimmed ? DIM_STROKE : "rgba(94,106,210,0.6)";
-          const iconColor = isActive ? "#ffffff" : dimmed ? "rgba(255,255,255,0.15)" : ACCENT;
+          const borderColor = isActive ? ACCENT : dimmed ? DIM_STROKE : brandAlpha(0.6);
+          const iconColor = isActive ? "rgb(var(--ink))" : dimmed ? "var(--graph-dim-icon)" : ACCENT;
           const glow = isActive
-            ? "0 0 22px 4px rgba(94,106,210,0.55), 0 0 45px 11px rgba(94,106,210,0.25)"
+            ? `0 0 22px 4px ${brandGlow(0.55)}, 0 0 45px 11px ${brandGlow(0.25)}`
             : dimmed
             ? "none"
-            : "0 0 11px 1.4px rgba(94,106,210,0.25)";
+            : `0 0 11px 1.4px ${brandGlow(0.25)}`;
           return (
             <div
               key={c.id}
@@ -753,9 +765,8 @@ export default function ConceptGraph({ className = "" }) {
                 }}
               >
                 <Icon
-                  color={iconColor}
                   strokeWidth={2}
-                  style={{ width: "47%", height: "47%", transition: reduce ? "none" : "color 0.4s ease" }}
+                  style={{ color: iconColor, width: "47%", height: "47%", transition: reduce ? "none" : "color 0.4s ease" }}
                 />
               </div>
             </div>

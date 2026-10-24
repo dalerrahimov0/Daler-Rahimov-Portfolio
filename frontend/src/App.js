@@ -32,7 +32,7 @@ function App() {
   }, []);
 
   return (
-    <div className="App text-zinc-300">
+    <div className="App text-ink-body">
       <Navbar />
       <main>
         <Hero />
