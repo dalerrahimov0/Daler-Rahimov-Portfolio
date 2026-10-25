@@ -85,9 +85,11 @@ const Lightbox = ({ lightbox, onClose, onNavigate }) => {
           className="max-h-[80vh] max-w-[85vw] object-contain"
           style={{ boxShadow: "var(--lightbox-frame)" }}
         />
-        {hasMultiple && (
+        {(hasMultiple || image.label) && (
           <figcaption className="font-mono2 text-xs text-ink-muted tracking-widest">
-            {index + 1} / {images.length}
+            {image.label && <span className="text-ink-body">{image.label}</span>}
+            {image.label && hasMultiple && " · "}
+            {hasMultiple && `${index + 1} / ${images.length}`}
           </figcaption>
         )}
       </figure>
@@ -107,6 +109,114 @@ const Lightbox = ({ lightbox, onClose, onNavigate }) => {
   );
 };
 
+const LIVE_BUTTON_CLASS = {
+  gold: "bg-gold text-black hover:bg-gold-hover",
+  brand: "bg-brand text-white hover:bg-brand/85",
+  default: "bg-inverse text-inverse-ink hover:bg-inverse-hover",
+};
+
+const SectionHeading = ({ children, className = "mb-5" }) => (
+  <h4 className={`font-mono2 text-xs uppercase tracking-[0.25em] text-ink-muted ${className}`}>{children}</h4>
+);
+
+const Capabilities = ({ items }) => (
+  <div className="mt-14">
+    <SectionHeading className="mb-6">Core Capabilities</SectionHeading>
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-10">
+      {items.map((c) => (
+        <div key={c.n} className="border-t border-edge-control pt-5">
+          <p className="font-mono2 text-xs text-brand tracking-widest">{c.n}</p>
+          <h5 className="font-display font-bold text-ink text-lg mt-2">{c.title}</h5>
+          <ul className="mt-4 space-y-2">
+            {c.items.map((item) => (
+              <li key={item} className="text-ink-soft text-sm leading-relaxed">{item}</li>
+            ))}
+          </ul>
+        </div>
+      ))}
+    </div>
+  </div>
+);
+
+const ProofStrip = ({ proof, id }) => (
+  <div data-testid={`project-${id}-proof`} className="mt-10 border-y border-edge-control">
+    <ul className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
+      {proof.items.map((it) => (
+        <li key={it.label} className="py-4 pr-4 border-b border-edge-subtle lg:border-b-0">
+          {it.value && <span className="block font-display font-bold text-ink text-xl leading-none mb-1.5">{it.value}</span>}
+          <span className="block font-mono2 text-xs text-ink-body leading-relaxed">{it.label}</span>
+        </li>
+      ))}
+    </ul>
+    <p className="text-ink-muted text-sm leading-relaxed py-4 lg:border-t lg:border-edge-subtle">{proof.note}</p>
+  </div>
+);
+
+const Challenges = ({ heading, items }) => (
+  <div className="mt-14">
+    <SectionHeading>Engineering Challenges</SectionHeading>
+    <h5 className="font-display font-bold text-ink tracking-tight text-2xl sm:text-3xl leading-tight max-w-2xl">{heading}</h5>
+    <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-8">
+      {items.map((c) => (
+        <div key={c.title} className="border-t border-edge-control pt-5">
+          <h6 className="text-ink font-medium">{c.title}</h6>
+          <p className="text-ink-soft leading-relaxed mt-2">{c.body}</p>
+        </div>
+      ))}
+    </div>
+  </div>
+);
+
+const EvidenceTrail = ({ evidence, id, onExpandScreenshot }) => (
+  <div data-testid={`project-${id}-evidence`} className="mt-14 border border-edge-subtle bg-surface p-6 sm:p-10">
+    <SectionHeading className="mb-6">Evidence System</SectionHeading>
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+      <div className="lg:col-span-6">
+        <h5 className="font-display font-bold text-ink tracking-tight text-2xl sm:text-3xl leading-tight">
+          {evidence.heading}
+        </h5>
+        <p className="text-ink-soft leading-relaxed mt-5">{evidence.body}</p>
+        <ol className="mt-8 flex flex-wrap items-center gap-x-2 gap-y-3" aria-label="Evidence trail">
+          {evidence.chain.map((step, i) => (
+            <li key={step} className="flex items-center gap-2">
+              <span className="font-mono2 text-xs text-ink-body border border-edge-control px-3 py-1.5">{step}</span>
+              {i < evidence.chain.length - 1 && <span className="text-brand text-xs" aria-hidden="true">→</span>}
+            </li>
+          ))}
+        </ol>
+      </div>
+      <figure className="lg:col-span-6">
+        <div className="overflow-hidden border border-edge-control">
+          <ExpandableImage
+            src={evidence.screenshot.src}
+            alt={evidence.screenshot.alt}
+            className="w-full h-auto max-h-[34rem] object-cover object-top"
+            testId={`project-${id}-evidence-image`}
+            onExpand={onExpandScreenshot}
+          />
+        </div>
+        <figcaption className="font-mono2 text-[11px] text-ink-muted leading-relaxed mt-3">{evidence.screenshot.caption}</figcaption>
+      </figure>
+    </div>
+  </div>
+);
+
+const Decisions = ({ items }) => (
+  <div className="mt-14">
+    <SectionHeading>Engineering Decisions</SectionHeading>
+    <ol className="space-y-4">
+      {items.map((d, i) => (
+        <li key={d.title} className="flex items-start gap-4 text-ink-soft leading-relaxed">
+          <span className="font-mono2 text-xs text-brand mt-1 w-5 shrink-0">{String(i + 1).padStart(2, "0")}</span>
+          <span>
+            <span className="text-ink font-medium">{d.title}</span> — {d.body}
+          </span>
+        </li>
+      ))}
+    </ol>
+  </div>
+);
+
 const ProjectLinks = ({ p, images, onExpand, isFlagship }) => {
   const iconClass = "text-brand";
   return (
@@ -117,11 +227,7 @@ const ProjectLinks = ({ p, images, onExpand, isFlagship }) => {
           target="_blank"
           rel="noopener noreferrer"
           data-testid={`project-${p.id}-live-link`}
-          className={
-            isFlagship
-              ? "focus-ring inline-flex items-center gap-2 bg-gold text-black font-medium text-sm px-6 py-3 hover:bg-gold-hover transition-colors duration-200"
-              : "focus-ring inline-flex items-center gap-2 bg-inverse text-inverse-ink font-medium text-sm px-6 py-3 hover:bg-inverse-hover transition-colors duration-200"
-          }
+          className={`focus-ring inline-flex items-center gap-2 font-medium text-sm px-6 py-3 transition-colors duration-200 ${LIVE_BUTTON_CLASS[isFlagship ? "gold" : p.accent] || LIVE_BUTTON_CLASS.default}`}
         >
           Live site <ArrowUpRight size={15} />
         </a>
@@ -158,13 +264,22 @@ const ProjectLinks = ({ p, images, onExpand, isFlagship }) => {
   );
 };
 
+// A project either lists `image` + `gallery`, or numbered `screenshots` slots
+// (only slots with a `src` are shown). Either way: first image is the hero.
+const projectImages = (p) =>
+  p.screenshots
+    ? p.screenshots.filter((s) => s.src).map(({ src, alt, label, slot }) => ({ src, alt, label, slot }))
+    : [{ src: p.image, alt: `${p.name} project visual` }, ...(p.gallery || [])];
+
 const CaseStudy = ({ p, onExpand }) => {
-  const images = [{ src: p.image, alt: `${p.name} project visual` }, ...(p.gallery || [])];
+  const images = projectImages(p);
+  const gallery = images.slice(1);
   const isFlagship = p.accent === "gold";
   const accentColor = isFlagship ? GOLD : "rgb(var(--brand))";
   const accentTextClass = isFlagship ? "text-gold-ink" : "text-brand";
-  const sectionBorderClass = isFlagship ? "border-gold-edge" : "border-edge-subtle";
+  const sectionBorderClass = isFlagship ? "border-gold-edge" : p.accent === "brand" ? "border-brand/30" : "border-edge-subtle";
   const chipClass = "font-mono2 text-xs text-ink-body border border-edge-control px-3 py-1.5";
+  const captionClass = "font-mono2 text-[11px] leading-snug text-ink-muted mt-2";
 
   return (
   <Reveal>
@@ -174,6 +289,9 @@ const CaseStudy = ({ p, onExpand }) => {
           <span className="font-display font-bold text-6xl text-ink-numeral select-none">{p.index}</span>
           <p className={`font-mono2 text-xs uppercase tracking-[0.25em] ${accentTextClass} mt-6 mb-3`}>{p.kind}</p>
           <h3 className="font-display font-bold text-ink tracking-tight text-2xl sm:text-3xl">{p.name}</h3>
+          {p.headline && (
+            <p className="font-display font-bold text-ink-strong text-lg sm:text-xl mt-3 leading-snug">{p.headline}</p>
+          )}
           <p className="text-ink-muted mt-3 leading-relaxed">{p.tagline}</p>
         </div>
         <div className="lg:col-span-8">
@@ -181,35 +299,43 @@ const CaseStudy = ({ p, onExpand }) => {
             <ExpandableImage
               src={images[0].src}
               alt={images[0].alt}
-              className="w-full h-56 sm:h-72 object-cover group-hover/img:scale-[1.03] transition-transform duration-700"
+              className={`w-full h-56 sm:h-72 object-cover ${p.screenshots ? "object-top" : ""} group-hover/img:scale-[1.03] transition-transform duration-700`}
               testId={`project-${p.id}-image`}
               onExpand={() => onExpand(images, 0)}
               isFlagship={isFlagship}
             />
           </div>
-          {p.gallery?.length > 0 && (
-            <div className="mt-3 grid grid-cols-3 gap-3">
-              {p.gallery.map((g, i) => (
-                <div key={g.src} className="overflow-hidden border border-edge-subtle">
-                  <ExpandableImage
-                    src={g.src}
-                    alt={g.alt}
-                    className="w-full h-20 sm:h-28 object-cover group-hover/img:scale-[1.03] transition-transform duration-700"
-                    testId={`project-${p.id}-gallery-${i + 1}`}
-                    onExpand={() => onExpand(images, i + 1)}
-                    isFlagship={isFlagship}
-                  />
-                </div>
+          {images[0].label && <p className={captionClass}>{images[0].label}</p>}
+          {gallery.length > 0 && (
+            <div className={`mt-3 grid ${gallery.length === 4 ? "grid-cols-4" : "grid-cols-3"} gap-3`}>
+              {gallery.map((g, i) => (
+                <figure key={g.src}>
+                  <div className="overflow-hidden border border-edge-subtle">
+                    <ExpandableImage
+                      src={g.src}
+                      alt={g.alt}
+                      className={`w-full h-20 sm:h-28 object-cover ${p.screenshots ? "object-top" : ""} group-hover/img:scale-[1.03] transition-transform duration-700`}
+                      testId={`project-${p.id}-gallery-${i + 1}`}
+                      onExpand={() => onExpand(images, i + 1)}
+                      isFlagship={isFlagship}
+                    />
+                  </div>
+                  {g.label && <figcaption className={captionClass}>{g.label}</figcaption>}
+                </figure>
               ))}
             </div>
           )}
         </div>
       </div>
 
+      {p.proof && <ProofStrip proof={p.proof} id={p.id} />}
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 mt-14">
         <div>
           <h4 className="font-mono2 text-xs uppercase tracking-[0.25em] text-ink-muted mb-4">Problem</h4>
-          <p className="text-ink-soft leading-relaxed">{p.problem}</p>
+          {[].concat(p.problem).map((para, i) => (
+            <p key={i} className={`text-ink-soft leading-relaxed ${i > 0 ? "mt-4" : ""}`}>{para}</p>
+          ))}
         </div>
         <div>
           <h4 className="font-mono2 text-xs uppercase tracking-[0.25em] text-ink-muted mb-4">Solution</h4>
@@ -220,11 +346,37 @@ const CaseStudy = ({ p, onExpand }) => {
       {p.diagram && (
         <div className="mt-14 border border-edge-subtle bg-surface p-6 sm:p-10">
           <h4 className="font-mono2 text-xs uppercase tracking-[0.25em] text-ink-muted mb-6">Architecture</h4>
+          {p.diagramCaption && (
+            <div className="-mt-2 mb-8 max-w-3xl">
+              <p className="font-display font-bold text-ink tracking-tight text-xl sm:text-2xl">{p.diagramCaption}</p>
+              {p.diagramLead && <p className="text-ink-soft leading-relaxed mt-3">{p.diagramLead}</p>}
+              {p.diagramEmphasis && (
+                <div className="mt-3 border-l-2 border-brand pl-4">
+                  <p className="text-ink font-medium leading-relaxed">{p.diagramEmphasis}</p>
+                  {p.diagramDetail && <p className="text-ink-soft text-sm leading-relaxed mt-2">{p.diagramDetail}</p>}
+                </div>
+              )}
+            </div>
+          )}
           <div className="min-h-[200px]">
             <Diagram type={p.diagram} accentColor={accentColor} />
           </div>
         </div>
       )}
+
+      {p.capabilities?.length > 0 && <Capabilities items={p.capabilities} />}
+
+      {p.evidence && (
+        <EvidenceTrail
+          evidence={p.evidence}
+          id={p.id}
+          onExpandScreenshot={() => onExpand(images, Math.max(0, images.findIndex((i) => i.slot === p.evidence.screenshot.slot)))}
+        />
+      )}
+
+      {p.challenges?.length > 0 && <Challenges heading={p.challengesHeading} items={p.challenges} />}
+
+      {p.decisions?.length > 0 && <Decisions items={p.decisions} />}
 
       {p.keyIdeas?.length > 0 && (
         <div className="mt-14">
@@ -258,21 +410,42 @@ const CaseStudy = ({ p, onExpand }) => {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 mt-14">
         <div className="lg:col-span-5">
           <h4 className="font-mono2 text-xs uppercase tracking-[0.25em] text-ink-muted mb-5">Tech Stack</h4>
-          <div className="flex flex-wrap gap-2">
-            {p.tech.map((t) => (
-              <span key={t} className="font-mono2 text-xs text-ink-body border border-edge-control px-3 py-1.5">
-                {t}
-              </span>
-            ))}
-          </div>
+          {p.techGroups ? (
+            <dl className="space-y-4">
+              {p.techGroups.map((g) => (
+                <div key={g.domain}>
+                  <dt className="font-mono2 text-[11px] uppercase tracking-widest text-ink-muted mb-2">{g.domain}</dt>
+                  <dd className="flex flex-wrap gap-2">
+                    {g.items.map((t) => (
+                      <span key={t} className={chipClass}>{t}</span>
+                    ))}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+          ) : (
+            <div className="flex flex-wrap gap-2">
+              {p.tech.map((t) => (
+                <span key={t} className="font-mono2 text-xs text-ink-body border border-edge-control px-3 py-1.5">
+                  {t}
+                </span>
+              ))}
+            </div>
+          )}
         </div>
         <div className="lg:col-span-7">
           <h4 className="font-mono2 text-xs uppercase tracking-[0.25em] text-ink-muted mb-5">Outcome</h4>
           <ul className="space-y-3">
             {p.outcome.map((o) => (
-              <li key={o} className="flex items-start gap-3 text-ink-soft leading-relaxed">
+              <li key={o.title || o} className="flex items-start gap-3 text-ink-soft leading-relaxed">
                 <Check size={15} className="text-brand mt-1 shrink-0" aria-hidden="true" />
-                <span>{o}</span>
+                {o.title ? (
+                  <span>
+                    <span className="text-ink font-medium">{o.title}</span> — {o.body}
+                  </span>
+                ) : (
+                  <span>{o}</span>
+                )}
               </li>
             ))}
           </ul>

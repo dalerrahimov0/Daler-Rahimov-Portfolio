@@ -30,6 +30,21 @@ Highlights
 
 ---
 
+## DataLens
+
+**The AI analyst that shows its work** — an evidence-first AI analytics platform — [datalens-khaki-one.vercel.app](https://datalens-khaki-one.vercel.app/).
+
+Highlights
+
+- CSV/XLSX upload → automatic profiling, data-quality analysis, and dashboard generation
+- Natural-language questions answered by a deterministic calculation engine, not the model
+- "Show work" evidence: calculation, filters, row counts, source rows, and verification status
+- Dataset version comparison with schema, distribution, and quality changes
+- Validated Copilot dashboard edits with history and Undo
+- Next.js + FastAPI/Polars, PostgreSQL, Vercel Blob, Auth0 (OIDC), OpenAI Responses API, Vercel
+
+---
+
 ## Personal AI Architecture (PAI)
 
 A long-term AI operating architecture exploring:

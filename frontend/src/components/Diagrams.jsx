@@ -18,12 +18,16 @@ import { useMediaQuery } from "@/hooks/use-media-query";
 // (SVG presentation attributes don't resolve var()), so every diagram follows
 // the active theme with no theme logic here.
 const BRAND = "rgb(var(--brand))";
-const Box = ({ x, y, w = 120, h = 44, label, accent = false, color = BRAND, accentText = "#ffffff", delay = 0, reduce, animated = true }) => {
+// `label` may be an array for a multi-line label; `dashed` outlines a node in
+// the brand color with a dashed stroke (used for AI-only steps).
+const Box = ({ x, y, w = 120, h = 44, label, accent = false, dashed = false, color = BRAND, accentText = "#ffffff", delay = 0, reduce, animated = true }) => {
+  const lines = Array.isArray(label) ? label : [label];
   const rect = (
     <rect
       x={x - w / 2} y={y - h / 2} width={w} height={h}
       strokeWidth="1" rx="2"
-      style={{ fill: accent ? color : "rgb(var(--surface))", stroke: accent ? color : "var(--diagram-stroke)" }}
+      strokeDasharray={dashed ? "4 3" : undefined}
+      style={{ fill: accent ? color : "rgb(var(--surface))", stroke: accent || dashed ? color : "var(--diagram-stroke)" }}
     />
   );
   const text = (
@@ -33,7 +37,11 @@ const Box = ({ x, y, w = 120, h = 44, label, accent = false, color = BRAND, acce
       fontFamily="JetBrains Mono, monospace"
       style={{ fill: accent ? accentText : "rgb(var(--ink-body))" }}
     >
-      {label}
+      {lines.length === 1
+        ? lines[0]
+        : lines.map((line, i) => (
+            <tspan key={line} x={x} dy={i === 0 ? `${-(lines.length - 1) * 0.6}em` : "1.2em"}>{line}</tspan>
+          ))}
     </text>
   );
 
@@ -227,8 +235,132 @@ export const PipelineDiagram = () => {
   );
 };
 
+const DiagramLabel = ({ x, y, children, anchor = "start", size = 10 }) => (
+  <text
+    x={x} y={y} textAnchor={anchor} dominantBaseline="central"
+    fontSize={size} letterSpacing="0.12em"
+    fontFamily="JetBrains Mono, monospace"
+    style={{ fill: "rgb(var(--ink-muted))" }}
+  >
+    {children}
+  </text>
+);
+
+// Legend swatches mirror Box: plain stroke = deterministic code, brand fill =
+// the calculation engine, dashed brand stroke = AI (language only).
+const DataLensLegend = ({ items }) => (
+  <g>
+    {items.map((it) => (
+      <g key={it.label}>
+        <rect
+          x={it.x} y={it.y - 5} width="16" height="10" rx="1" strokeWidth="1"
+          strokeDasharray={it.kind === "ai" ? "3 2" : undefined}
+          style={{
+            fill: it.kind === "engine" ? BRAND : "rgb(var(--surface))",
+            stroke: it.kind === "plain" ? "var(--diagram-stroke)" : BRAND,
+          }}
+        />
+        <DiagramLabel x={it.x + 24} y={it.y} size={11}>{it.label}</DiagramLabel>
+      </g>
+    ))}
+  </g>
+);
+
+const DATALENS_PIPELINE = [
+  { label: ["CSV / XLSX", "Upload"] },
+  { label: ["Profiling &", "Quality Analysis"] },
+  { label: ["Deterministic", "Calculation Engine"], accent: true },
+  { label: ["Validation &", "Evidence"] },
+  { label: ["Dashboard &", "AI Copilot"] },
+];
+
+const DATALENS_COPILOT = [
+  { label: ["User", "Question"] },
+  { label: ["AI Intent", "Interpretation"], dashed: true },
+  { label: ["Validated", "Data Query"] },
+  { label: ["Deterministic", "Calculation"], accent: true },
+  { label: "Evidence" },
+  { label: ["Natural-Language", "Explanation"], dashed: true },
+];
+
+const DATALENS_ARIA =
+  "DataLens architecture. Analytical pipeline: CSV/XLSX upload, data profiling and quality analysis, deterministic calculation engine, validation and evidence, dashboard and AI Copilot. Copilot request: user question, AI intent interpretation, validated data query, deterministic calculation by the same engine, evidence, natural-language explanation. AI is used only for interpreting and wording; numbers come from the calculation engine.";
+
+export const DataLensDiagram = () => {
+  const reduce = useReducedMotion();
+  const isMobile = useMediaQuery(MOBILE_QUERY);
+
+  if (isMobile) {
+    // Two columns instead of two rows: pipeline on the left, Copilot request
+    // on the right, with the legend in the slot under the shorter column.
+    const rowY = (i) => 72 + i * 84;
+    const H = 54;
+    const left = { x: 95, w: 170 };
+    const right = { x: 285, w: 170 };
+    return (
+      <ResponsiveSvg w={380} h={540} role="img" aria-label={DATALENS_ARIA}>
+        <DiagramLabel x={left.x} y={22} anchor="middle">PIPELINE</DiagramLabel>
+        <DiagramLabel x={right.x} y={22} anchor="middle">COPILOT</DiagramLabel>
+        {DATALENS_PIPELINE.slice(0, -1).map((n, i) => (
+          <Edge key={`pl-${i}`} x1={left.x} y1={rowY(i) + H / 2} x2={left.x} y2={rowY(i + 1) - H / 2} reduce={reduce} animated={false} />
+        ))}
+        {DATALENS_COPILOT.slice(0, -1).map((n, i) => (
+          <Edge key={`cp-${i}`} x1={right.x} y1={rowY(i) + H / 2} x2={right.x} y2={rowY(i + 1) - H / 2} reduce={reduce} animated={false} />
+        ))}
+        <Edge x1={left.x + left.w / 2} y1={rowY(2)} x2={right.x - right.w / 2} y2={rowY(3)} reduce={reduce} animated={false} />
+        {DATALENS_PIPELINE.map((n, i) => (
+          <Box key={`pb-${i}`} x={left.x} y={rowY(i)} w={left.w} h={H} label={n.label} accent={n.accent} reduce={reduce} animated={false} />
+        ))}
+        {DATALENS_COPILOT.map((n, i) => (
+          <Box key={`cb-${i}`} x={right.x} y={rowY(i)} w={right.w} h={H} label={n.label} accent={n.accent} dashed={n.dashed} reduce={reduce} animated={false} />
+        ))}
+        <DataLensLegend
+          items={[
+            { x: 12, y: 466, kind: "plain", label: "Deterministic" },
+            { x: 12, y: 490, kind: "engine", label: "Calc engine" },
+            { x: 12, y: 514, kind: "ai", label: "AI · language" },
+          ]}
+        />
+      </ResponsiveSvg>
+    );
+  }
+
+  const H = 54;
+  const pipe = { y: 78, w: 148, xs: [86, 258, 430, 602, 774] };
+  const cop = { y: 228, w: 126, xs: [72, 215, 358, 502, 645, 788] };
+  return (
+    <ResponsiveSvg w={860} h={330} role="img" aria-label={DATALENS_ARIA}>
+      <DiagramLabel x={12} y={28}>ANALYTICAL PIPELINE</DiagramLabel>
+      <DiagramLabel x={12} y={178}>COPILOT REQUEST</DiagramLabel>
+      {pipe.xs.slice(0, -1).map((x, i) => (
+        <Edge key={`pl-${i}`} x1={x + pipe.w / 2} y1={pipe.y} x2={pipe.xs[i + 1] - pipe.w / 2} y2={pipe.y} delay={0.3 + i * 0.15} reduce={reduce} />
+      ))}
+      {cop.xs.slice(0, -1).map((x, i) => (
+        <Edge key={`cp-${i}`} x1={x + cop.w / 2} y1={cop.y} x2={cop.xs[i + 1] - cop.w / 2} y2={cop.y} delay={0.9 + i * 0.12} reduce={reduce} />
+      ))}
+      {/* The Copilot's calculation is the pipeline's engine, not a second one. */}
+      <Edge x1={pipe.xs[2]} y1={pipe.y + H / 2} x2={cop.xs[3]} y2={cop.y - H / 2} delay={0.8} reduce={reduce} />
+      <DiagramLabel x={480} y={150}>same engine</DiagramLabel>
+      {DATALENS_PIPELINE.map((n, i) => (
+        <Box key={`pb-${i}`} x={pipe.xs[i]} y={pipe.y} w={pipe.w} h={H} label={n.label} accent={n.accent} delay={0.1 + i * 0.15} reduce={reduce} />
+      ))}
+      {DATALENS_COPILOT.map((n, i) => (
+        <Box key={`cb-${i}`} x={cop.xs[i]} y={cop.y} w={cop.w} h={H} label={n.label} accent={n.accent} dashed={n.dashed} delay={0.7 + i * 0.12} reduce={reduce} />
+      ))}
+      <DataLensLegend
+        items={[
+          { x: 12, y: 310, kind: "plain", label: "Deterministic code" },
+          { x: 200, y: 310, kind: "engine", label: "Calculation engine" },
+          { x: 388, y: 310, kind: "ai", label: "AI — language only, never numbers" },
+        ]}
+      />
+    </ResponsiveSvg>
+  );
+};
+
 export const Diagram = ({ type, accentColor }) => {
   if (type === "pai") return <PAIDiagram />;
+  if (type === "datalens") return <DataLensDiagram />;
   if (type === "tajkhona") return <TajKhonaDiagram accentColor={accentColor} />;
   return null;
 };
