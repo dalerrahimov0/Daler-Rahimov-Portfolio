@@ -284,7 +284,7 @@ const DATALENS_COPILOT = [
 ];
 
 const DATALENS_ARIA =
-  "DataLens architecture. Analytical pipeline: CSV/XLSX upload, data profiling and quality analysis, deterministic calculation engine, validation and evidence, dashboard and AI Copilot. Copilot request: user question, AI intent interpretation, validated data query, deterministic calculation by the same engine, evidence, natural-language explanation. AI is used only for interpreting and wording; numbers come from the calculation engine.";
+  "DataLens architecture. Analytical pipeline: CSV/XLSX upload, data profiling and quality analysis, deterministic calculation engine, validation and evidence, dashboard and AI Copilot. Copilot request: user question, AI intent interpretation, validated data query, deterministic calculation using analytical components shared with the pipeline, evidence, natural-language explanation. AI is used only for interpreting and wording; numbers come from deterministic code.";
 
 export const DataLensDiagram = () => {
   const reduce = useReducedMotion();
@@ -338,9 +338,9 @@ export const DataLensDiagram = () => {
       {cop.xs.slice(0, -1).map((x, i) => (
         <Edge key={`cp-${i}`} x1={x + cop.w / 2} y1={cop.y} x2={cop.xs[i + 1] - cop.w / 2} y2={cop.y} delay={0.9 + i * 0.12} reduce={reduce} />
       ))}
-      {/* The Copilot's calculation is the pipeline's engine, not a second one. */}
+      {/* The Copilot's calculation reuses the pipeline's analytical components. */}
       <Edge x1={pipe.xs[2]} y1={pipe.y + H / 2} x2={cop.xs[3]} y2={cop.y - H / 2} delay={0.8} reduce={reduce} />
-      <DiagramLabel x={480} y={150}>same engine</DiagramLabel>
+      <DiagramLabel x={480} y={150}>shared analytical components</DiagramLabel>
       {DATALENS_PIPELINE.map((n, i) => (
         <Box key={`pb-${i}`} x={pipe.xs[i]} y={pipe.y} w={pipe.w} h={H} label={n.label} accent={n.accent} delay={0.1 + i * 0.15} reduce={reduce} />
       ))}
